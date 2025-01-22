@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/GD-Solutions/gds_base_api/internal/repositories"
-	"github.com/GD-Solutions/gds_base_api/pkg/utils"
+	"github.com/GD-Solutions/uala_backend_challenge/internal/repositories"
+	"github.com/GD-Solutions/uala_backend_challenge/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 

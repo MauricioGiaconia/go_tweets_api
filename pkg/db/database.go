@@ -7,41 +7,52 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
-var DB *sql.DB
-
-func Init() {
-
+func SetupDatabase() (*sql.DB, error) {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		return nil, fmt.Errorf("[x] Cannot load .env file: %v", err)
 	}
 
 	dbUser := os.Getenv("DB_USER")
-	dbPass := os.Getenv("DB_PASS")
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
+	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
+	dbSSLMode := os.Getenv("DB_SSLMODE")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName)
-
-	DB, err = sql.Open("mysql", dsn)
-	if err != nil {
-		log.Fatal(err)
+	if dbUser == "" || dbPassword == "" || dbName == "" {
+		return nil, fmt.Errorf("[x] DB missing variables to connect")
 	}
 
-	// Configurar el pool de conexiones
-	DB.SetMaxOpenConns(25)                 // Máximo número de conexiones abiertas
-	DB.SetMaxIdleConns(25)                 // Máximo número de conexiones inactivas
-	DB.SetConnMaxLifetime(5 * time.Minute) // Tiempo máximo de vida de una conexión
+	// Crear el string de conexión
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s", dbUser, dbPassword, dbName, dbSSLMode)
 
-	err = DB.Ping()
+	// Intenta abrir la conexión a la base de datos
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("[x] DB error to open: %v", err)
 	}
 
-	log.Println("MySQL DB: Successful connection!")
+	// Configuración del pool de conexiones
+	db.SetMaxOpenConns(10)                  // Número máximo de conexiones abiertas
+	db.SetMaxIdleConns(5)                   // Número máximo de conexiones inactivas
+	db.SetConnMaxLifetime(30 * time.Minute) // Tiempo máximo de vida de la conexión
+
+	// Se verifica la conexión
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("[x] DB ping error: %v", err)
+	}
+
+	return db, nil
+}
+
+// CloseDatabase cierra la conexión a la base de datos
+func CloseDatabase(db *sql.DB) {
+	err := db.Close()
+	if err != nil {
+		log.Fatalf("[x] DB error to close connection: %v", err)
+	}
+	log.Println("[x] DB Connection closed.")
 }

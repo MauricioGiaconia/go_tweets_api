@@ -3,10 +3,10 @@ package main // Nombre del paquete
 import (
 	"net/http"
 
-	"github.com/GD-Solutions/gds_base_api/internal/middleware"
-	"github.com/GD-Solutions/gds_base_api/internal/repositories"
-	"github.com/GD-Solutions/gds_base_api/pkg/db"
-	"github.com/GD-Solutions/gds_base_api/pkg/utils"
+	"github.com/GD-Solutions/uala_backend_challenge/internal/middleware"
+	"github.com/GD-Solutions/uala_backend_challenge/internal/repositories"
+	"github.com/GD-Solutions/uala_backend_challenge/pkg/db"
+	"github.com/GD-Solutions/uala_backend_challenge/pkg/utils"
 	"github.com/gin-gonic/gin"
 ) // Importar dependencias
 
