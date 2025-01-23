@@ -1,22 +1,19 @@
 package main // Nombre del paquete
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/GD-Solutions/uala_backend_challenge/internal/middleware"
-	"github.com/GD-Solutions/uala_backend_challenge/internal/repositories"
-	"github.com/GD-Solutions/uala_backend_challenge/pkg/db"
-	"github.com/GD-Solutions/uala_backend_challenge/pkg/utils"
+	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/db"
+	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/utils"
 	"github.com/gin-gonic/gin"
 ) // Importar dependencias
 
 func main() { // función inicio requerida
-	db.Init()
+	fmt.Println(("estoy entrando?"))
+	db.SetupDatabase()
 
 	router := gin.Default()
-	authRepo := repositories.NewAuthRepository()
-
-	router.Use(middleware.AuthMiddleware(authRepo))
 
 	//Endpoint ping para probar el funcionamiento de la API
 	router.GET("/ping", func(c *gin.Context) {

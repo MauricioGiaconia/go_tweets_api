@@ -17,20 +17,23 @@ func SetupDatabase() (*sql.DB, error) {
 		return nil, fmt.Errorf("[x] Cannot load .env file: %v", err)
 	}
 
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
 	dbSSLMode := os.Getenv("DB_SSLMODE")
 
-	if dbUser == "" || dbPassword == "" || dbName == "" {
+	if dbUser == "" || dbPassword == "" || dbName == "" || dbPort == "" || dbHost == "" {
 		return nil, fmt.Errorf("[x] DB missing variables to connect")
 	}
 
 	// Crear el string de conexión
-	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s", dbUser, dbPassword, dbName, dbSSLMode)
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", dbUser, dbPassword, dbHost, dbPort, dbName, dbSSLMode)
 
 	// Intenta abrir la conexión a la base de datos
 	db, err := sql.Open("postgres", connStr)
+
 	if err != nil {
 		return nil, fmt.Errorf("[x] DB error to open: %v", err)
 	}
