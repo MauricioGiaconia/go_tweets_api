@@ -1,7 +1,6 @@
 package main // Nombre del paquete
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/db"
@@ -10,8 +9,7 @@ import (
 ) // Importar dependencias
 
 func main() { // función inicio requerida
-	fmt.Println(("estoy entrando?"))
-	db.SetupDatabase()
+	db.SetupSQLiteDatabase()
 
 	router := gin.Default()
 
