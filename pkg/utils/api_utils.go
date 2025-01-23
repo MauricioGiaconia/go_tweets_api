@@ -97,7 +97,7 @@ func ApiCall(url string, opts ApiCallOptions) (interface{}, error) {
 }
 
 // Metodo encargado de construir la respuesta que tendrán los distintos endpoints.
-// Para una respuesta comun, bastará con enviar como argumento "code" y "data".
+// Para una respuesta de un unico dato exitoso, bastará con enviar como argumento "code" y "data".
 // En cambio, si la respuesta será un listado que requiere paginado, se deberán mandar todos los argumentos permitidos por la funcion
 func ResponseToApi(code int, data interface{}, isAList bool, count int, limit int, offset int) interface{} {
 	if code >= 400 {

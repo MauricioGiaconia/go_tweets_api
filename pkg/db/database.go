@@ -84,7 +84,6 @@ func SetupDatabase() (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("[x] DB error to open: %v", err)
 	}
-	fmt.Print("Hola bbto3")
 	// Configuración del pool de conexiones
 	db.SetMaxOpenConns(10)                  // Número máximo de conexiones abiertas
 	db.SetMaxIdleConns(5)                   // Número máximo de conexiones inactivas
@@ -109,13 +108,14 @@ func CloseDatabase(db *sql.DB) {
 }
 
 // createTables crea las tablas necesarias en SQLite
-// Nota: Esto solo sirve para levantar la BD en memoria, si se utiliza PostgreSQL, se deben crear las tablas en su respectiva DB
+// Nota: Esto solo sirve para levantar la DB en memoria. Si se utiliza PostgreSQL, se deben crear las tablas en su respectiva DB
 func createTables(db *sql.DB) error {
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS users (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			username TEXT NOT NULL,
+			name TEXT NOT NULL,
 			email TEXT NOT NULL UNIQUE,
+			password TEXT NOT NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		);
 	`)

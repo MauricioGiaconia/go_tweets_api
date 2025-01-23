@@ -10,6 +10,6 @@ func SetupUserRoutes(router *gin.Engine) {
 
 	userGroup := router.Group("/users")
 	{
-		userGroup.POST("/", controllers.CreateUserHandler) // POST /users crea un nuevo usuario
+		userGroup.POST("/create", controllers.CreateUserHandler) // POST /users crea un nuevo usuario
 	}
 }
