@@ -12,44 +12,57 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserController struct {
-	UserService *services.UserService
+type UserFollowController struct {
+	UserFollowService *services.FollowService
 }
 
-func NewUserController(db *sql.DB) *UserController {
-	userService := services.NewUserService(db)
-	return &UserController{UserService: userService}
+func NewUseFollowrController(db *sql.DB) *UserFollowController {
+	userFollowService := services.NewFollowService(db)
+	return &UserFollowController{UserFollowService: userFollowService}
 }
 
-// CreateUserHandler maneja la solicitud de creación de un nuevo usuario.
-func (uc *UserController) CreateUserHandler(c *gin.Context) {
-	var user models.User
+// FollowUserHandler maneja la solicitud de seguimiento de un usuario a otro
+func (ufc *UserFollowController) FollowUserHandler(c *gin.Context) {
+	var follow models.UserFollow
 
 	// Decodificamos el cuerpo de la solicitud JSON al struct User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	if err := c.ShouldBindJSON(&follow); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": fmt.Sprintf("[x] Error decoding body: %v", err),
 		})
 		return
 	}
 
-	// Llamamos al servicio para crear el usuario
-	userID, err := uc.UserService.CreateUser(&user)
-	if err != nil {
+	if follow.FollowerID == follow.FollowedID {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("[x] Error creating user: %v", err),
+			"error": "Cannot follow yourself",
 		})
 		return
 	}
 
+	// Llamamos al servicio para crear el usuario
+	followResponse, err := ufc.UserFollowService.FollowUser(&follow)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("[x] Error to follow: %v", err),
+		})
+		return
+	}
+
+	msgResponse := "Followed"
+
+	if !followResponse {
+		msgResponse = "Cannot follow the user"
+	}
+
 	// Respondemos con el ID del usuario creado
 	c.JSON(http.StatusCreated, gin.H{
-		"id": userID,
+		"msg": msgResponse,
 	})
 }
 
-// GetUserByIdHandler maneja la solicitud de obtener un usuario por su ID.
-func (uc *UserController) GetUserByIdHandler(c *gin.Context) {
+// GetFollowersHandler maneja la solicitud de obtener un usuario por su ID.
+func (ufc *UserFollowController) GetFollowersHandler(c *gin.Context) {
 	idStr := c.Param("id")
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -61,7 +74,7 @@ func (uc *UserController) GetUserByIdHandler(c *gin.Context) {
 	}
 
 	// Llamamos al servicio para obtener el usuario
-	user, err := uc.UserService.GetUserById(id)
+	user, err := ufc.UserFollowService.GetFollowers(&id)
 
 	if err != nil {
 		if err.Error() == "Error fetching user: user not found" {

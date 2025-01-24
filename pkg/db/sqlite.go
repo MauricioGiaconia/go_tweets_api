@@ -70,10 +70,11 @@ func createTables(db *sql.DB) error {
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS follows (
 			follower_id INTEGER NOT NULL,
-			following_id INTEGER NOT NULL,
-			PRIMARY KEY(follower_id, following_id),
+			followed_id INTEGER NOT NULL,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY(follower_id, followed_id),
 			FOREIGN KEY(follower_id) REFERENCES users(id),
-			FOREIGN KEY(following_id) REFERENCES users(id)
+			FOREIGN KEY(followed_id) REFERENCES users(id)
 		);
 	`)
 	if err != nil {

@@ -1,7 +1,14 @@
 package models
 
+import "time"
+
 type UserFollow struct {
-	ID         int
-	UserID     int // Usuario que es seguido
-	FollowerID int // Usuario que sigue
+	FollowerID int64      `json:"followerId"` // Usuario seguidor
+	FollowedID int64      `json:"followedId"` // Usuario seguido
+	CreatedAt  *time.Time `json:"createdAt"`  // Fecha de seguimiento
+}
+
+type UserFollowers struct {
+	UserID    int    `json:"userId"`    // Identificador del usuario
+	Followers []User `json:"followers"` // Array de usuarios que tiene como seguidor
 }

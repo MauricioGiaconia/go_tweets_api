@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/models"
+	"github.com/MauricioGiaconia/uala_backend_challenge/internal/repositories"
 )
 
 type UserService struct {
@@ -16,33 +17,18 @@ func NewUserService(db *sql.DB) *UserService {
 }
 
 func (us *UserService) CreateUser(user *models.User) (int64, error) {
-	result, err := us.DB.Exec(`INSERT INTO users (name, email, password) VALUES (?, ?, ?)`,
-		user.Name, user.Email, user.Password)
+	userID, err := repositories.CreateUser(us.DB, user)
 	if err != nil {
-		return 0, fmt.Errorf("[x] Error inserting user: %v", err)
+		return 0, fmt.Errorf("Error creating user: %v", err)
 	}
-
-	// Obtenemos el ID del último usuario insertado
-	userID, err := result.LastInsertId()
-	if err != nil {
-		return 0, fmt.Errorf("[x] Error retrieving last inserted user ID: %v", err)
-	}
-
-	// Retornamos el ID del usuario y ningún error
 	return userID, nil
 }
 
 func (us *UserService) GetUserById(id int64) (models.User, error) {
-	var user models.User
-
-	err := us.DB.QueryRow(`SELECT id, name, email, created_at FROM users WHERE id = ?`, id).Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt)
+	user, err := repositories.GetUserById(us.DB, id)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
-			// Si no se encuentra el usuario, retornamos un error específico
-			return models.User{}, fmt.Errorf("user not found")
-		}
-		return models.User{}, fmt.Errorf("[x] Error to get user: %v", err)
+		return models.User{}, fmt.Errorf("Error fetching user: %v", err)
 	}
 
 	return user, nil
