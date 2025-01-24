@@ -64,6 +64,14 @@ func (ufc *UserFollowController) FollowUserHandler(c *gin.Context) {
 // GetFollowersHandler maneja la solicitud de obtener un usuario por su ID.
 func (ufc *UserFollowController) GetFollowersHandler(c *gin.Context) {
 	idStr := c.Param("id")
+	relationType := c.Param("follow_type")
+
+	// Validar que el parámetro follow_type sea válido
+	if relationType != "followers" && relationType != "following" {
+		badResponse := utils.ResponseToApi(http.StatusBadRequest, "Invalid follow type. Must be 'followers' or 'following'", false, 0, 0, 0)
+		c.JSON(http.StatusBadRequest, badResponse)
+		return
+	}
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
 
@@ -74,7 +82,7 @@ func (ufc *UserFollowController) GetFollowersHandler(c *gin.Context) {
 	}
 
 	// Llamamos al servicio para obtener el usuario
-	user, err := ufc.UserFollowService.GetFollowers(&id)
+	user, err := ufc.UserFollowService.GetFollows(&id, &relationType)
 
 	if err != nil {
 		if err.Error() == "Error fetching user: user not found" {

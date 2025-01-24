@@ -14,7 +14,7 @@ func SetupUserFollowRoutes(router *gin.Engine, db *sql.DB) {
 
 	userFollowGroup := router.Group("/users_follow")
 	{
-		userFollowGroup.POST("/create", userFollowController.FollowUserHandler)         // POST /users_follow/create crea un nuevo usuario seguidor a un usuario
-		userFollowGroup.GET("/:id/followers", userFollowController.GetFollowersHandler) // GET /users_follow/:id/followers obtiene todos los seguidores de un usuario
+		userFollowGroup.POST("/create", userFollowController.FollowUserHandler)                    // POST /users_follow/create crea un nuevo usuario seguidor a un usuario
+		userFollowGroup.GET("/:id/follows/:follow_type", userFollowController.GetFollowersHandler) // GET /users_follow/:id/followers obtiene todos los seguidores de un usuario
 	}
 }

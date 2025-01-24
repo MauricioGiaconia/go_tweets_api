@@ -20,19 +20,35 @@ func FollowUser(db *sql.DB, userFollow *models.UserFollow) (bool, error) {
 	return true, nil
 }
 
-func GetFollowers(db *sql.DB, userId int64) (*models.UserFollowers, error) {
+func GetFollows(db *sql.DB, userId int64, relationType string) (*models.UserFollows, error) {
 	query := `SELECT u.id, u.name, u.email, u.created_at, f.created_at AS follow_date
 				FROM users u
 				JOIN follows f ON u.id = f.follower_id
 				WHERE f.followed_id = $1`
 
-	var followers []models.UserFollowInfo
+	// Determinar la consulta según el tipo de relación
+	if relationType == "followers" {
+		query = `SELECT u.id, u.name, u.email, u.created_at, f.created_at AS follow_date
+				FROM users u
+				JOIN follows f ON u.id = f.follower_id
+				WHERE f.followed_id = $1`
+	} else if relationType == "following" {
+		query = `SELECT u.id, u.name, u.email, u.created_at, f.created_at AS follow_date
+				FROM users u
+				JOIN follows f ON u.id = f.followed_id
+				WHERE f.follower_id = $1`
+	} else {
+		return nil, fmt.Errorf("Invalid relationType: %s", relationType)
+	}
+
+	var follows []models.UserFollowInfo
 	rows, err := db.Query(query, userId)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error fetching followers: %v", err)
+		return nil, fmt.Errorf("Error fetching follows: %v", err)
 	}
 	defer rows.Close()
+
 	for rows.Next() {
 		var user models.User
 		var followDate time.Time
@@ -48,16 +64,17 @@ func GetFollowers(db *sql.DB, userId int64) (*models.UserFollowers, error) {
 			FollowDate:     followDate,
 		}
 
-		followers = append(followers, followData)
+		follows = append(follows, followData)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("Error iterating rows: %v", err)
 	}
 
-	userFollowers := &models.UserFollowers{
-		UserID:    int(userId),
-		Followers: followers,
+	userFollowers := &models.UserFollows{
+		UserID:     int(userId),
+		Follows:    follows,
+		FollowType: relationType,
 	}
 
 	return userFollowers, nil

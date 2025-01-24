@@ -8,9 +8,10 @@ type UserFollow struct {
 	CreatedAt  *time.Time `json:"createdAt"`  // Fecha de seguimiento
 }
 
-type UserFollowers struct {
-	UserID    int              `json:"userId"`    // Identificador del usuario
-	Followers []UserFollowInfo `json:"followers"` // Array de usuarios que tiene como seguidor
+type UserFollows struct {
+	UserID     int              `json:"userId"`     // Identificador del usuario
+	Follows    []UserFollowInfo `json:"follows"`    // Array de usuarios que tiene como seguidores o esta siguiendo
+	FollowType string           `json:"followType"` // String que indicara si el array son followers o following
 }
 
 type UserFollowInfo struct {

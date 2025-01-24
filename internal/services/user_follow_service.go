@@ -26,11 +26,11 @@ func (us *FollowService) FollowUser(follow *models.UserFollow) (bool, error) {
 	return userFollow, nil
 }
 
-func (us *FollowService) GetFollowers(userId *int64) (models.UserFollowers, error) {
-	userFollowers, err := repositories.GetFollowers(us.DB, *userId)
+func (us *FollowService) GetFollows(userId *int64, relationType *string) (models.UserFollows, error) {
+	userFollowers, err := repositories.GetFollows(us.DB, *userId, *relationType)
 
 	if err != nil {
-		return models.UserFollowers{}, fmt.Errorf("Error getting followers: %v", err)
+		return models.UserFollows{}, fmt.Errorf("Error getting followers: %v", err)
 	}
 
 	return *userFollowers, nil
