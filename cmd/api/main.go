@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-	dbInstance, err := factory.GetDatabase("postgres") //Esta hardcodeado sqlite, lo ideal seria recibir por variable de entorno la base de datos a utilziar
+	dbInstance, err := factory.GetDatabase("sqlite") //Esta hardcodeado sqlite, lo ideal seria recibir por variable de entorno la base de datos a utilziar
 
 	if err != nil {
 		log.Fatalf("[x] Error getting database instance: %v", err)
