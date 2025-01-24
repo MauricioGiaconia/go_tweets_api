@@ -1,18 +1,26 @@
 package controllers
 
 import (
+	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
-
-	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/db"
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/models"
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
-func CreateUserHandler(c *gin.Context) {
+type UserController struct {
+	UserService services.UserService
+}
+
+func NewUserController(db *sql.DB) *UserController {
+	// Se inicializa el servicio de usuarios pasandole la instancia de la DB
+	userService := services.NewUserService(db)
+	return &UserController{UserService: *userService}
+}
+
+func (uc *UserController) CreateUserHandler(c *gin.Context) {
 	var user models.User
 
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -23,19 +31,7 @@ func CreateUserHandler(c *gin.Context) {
 		return
 	}
 
-	database, err := db.SetupSQLiteDatabase() // En caso de utiliza postgresql, reemplazar con el metodo que corresponde
-	if err != nil {
-		log.Println("[x] CreateUserHandler DB connection error:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "CreateUserHandler DB connection error",
-		})
-		return
-	}
-	// En caso de utilziar postgress, descomentar el cierre de conexion a la DB.
-	// Si se cierra la conexion de SQLite utilizado en memoria, los datos se pierden.
-	// defer db.CloseDatabase(database)
-
-	userID, err := services.CreateUserService(database, &user)
+	userID, err := uc.UserService.CreateUser(&user)
 	if err != nil {
 
 		c.JSON(http.StatusBadRequest, gin.H{
