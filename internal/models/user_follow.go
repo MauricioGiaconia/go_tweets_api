@@ -9,6 +9,11 @@ type UserFollow struct {
 }
 
 type UserFollowers struct {
-	UserID    int    `json:"userId"`    // Identificador del usuario
-	Followers []User `json:"followers"` // Array de usuarios que tiene como seguidor
+	UserID    int              `json:"userId"`    // Identificador del usuario
+	Followers []UserFollowInfo `json:"followers"` // Array de usuarios que tiene como seguidor
+}
+
+type UserFollowInfo struct {
+	FollowUserData User      `json:"followUserData"`
+	FollowDate     time.Time `json:"followDate"`
 }
