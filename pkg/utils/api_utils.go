@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -14,13 +15,13 @@ type SuccessResponse struct {
 }
 
 type SuccessListResponse struct {
-	Code     int           `json:"code"`     // Status http
-	Data     []interface{} `json:"data"`     // Informacion de la respuesta
-	Count    int           `json:"count"`    // Total de elementos existentes en la BD
-	Limit    int           `json:"limit"`    // Maximo de elementos que se obtiene por pagina
-	Offset   int           `json:"offset"`   // Paginado
-	Next     string        `json:"next"`     // Campo para saber cual es el siguiente indice a consultar, sirve para el paginado
-	Previous string        `json:"previous"` // Campo para saber el indice anterior a consultar, sirve para paginado
+	Code     int         `json:"code"`     // Status http
+	Data     interface{} `json:"data"`     // Informacion de la respuesta
+	Count    int         `json:"count"`    // Total de elementos existentes en la BD
+	Limit    int         `json:"limit"`    // Maximo de elementos que se obtiene por pagina
+	Offset   int         `json:"offset"`   // Paginado
+	Next     string      `json:"next"`     // Campo para saber cual es el siguiente indice a consultar, sirve para el paginado
+	Previous string      `json:"previous"` // Campo para saber el indice anterior a consultar, sirve para paginado
 }
 
 type ErrorResponse struct {
@@ -130,16 +131,16 @@ func buildErrorResponse(code int, data interface{}) ErrorResponse {
 }
 
 func buildSuccessListResponse(code int, data interface{}, count int, limit int, offset int) interface{} {
-
-	if slice, ok := data.([]interface{}); ok {
+	if finalData, ok := data.(interface{}); ok {
+		fmt.Println("Entro en json")
 		return SuccessListResponse{
 			Code:     code,
-			Data:     slice,
+			Data:     finalData,
 			Count:    count,
 			Limit:    limit,
 			Offset:   offset,
-			Next:     "",
-			Previous: "",
+			Next:     calculateNextURL(limit, offset, count),
+			Previous: calculatePreviousURL(limit, offset),
 		}
 	}
 
@@ -147,4 +148,18 @@ func buildSuccessListResponse(code int, data interface{}, count int, limit int, 
 		Code:  code,
 		Error: "Sorry, we had trouble processing the information",
 	}
+}
+
+func calculateNextURL(limit, offset, count int) string {
+	if offset+limit >= count {
+		return "" // No hay más datos para la siguiente página
+	}
+	return fmt.Sprintf("?limit=%d&offset=%d", limit, offset+limit)
+}
+
+func calculatePreviousURL(limit, offset int) string {
+	if offset-limit < 0 {
+		return "" // No hay datos para la página anterior
+	}
+	return fmt.Sprintf("?limit=%d&offset=%d", limit, offset-limit)
 }

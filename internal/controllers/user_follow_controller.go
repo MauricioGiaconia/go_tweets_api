@@ -82,7 +82,7 @@ func (ufc *UserFollowController) GetFollowersHandler(c *gin.Context) {
 	}
 
 	// Llamamos al servicio para obtener el usuario
-	user, err := ufc.UserFollowService.GetFollows(&id, &relationType)
+	userFollowInfo, err := ufc.UserFollowService.GetFollows(&id, &relationType)
 
 	if err != nil {
 		if err.Error() == "Error fetching user: user not found" {
@@ -96,7 +96,7 @@ func (ufc *UserFollowController) GetFollowersHandler(c *gin.Context) {
 		return
 	}
 
-	// Respondemos con los datos del usuario en formato JSON
-	response := utils.ResponseToApi(http.StatusOK, user, false, 0, 0, 0)
+	// Respondemos con los seguidores/seguidos del usuario en formato JSON junto a la informacion del paginado
+	response := utils.ResponseToApi(http.StatusOK, userFollowInfo, true, 0, 0, 0)
 	c.JSON(http.StatusOK, response)
 }
