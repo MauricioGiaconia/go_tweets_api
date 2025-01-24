@@ -41,7 +41,7 @@ func GetFollows(db *sql.DB, userId int64, relationType string) (*models.UserFoll
 		return nil, fmt.Errorf("Invalid relationType: %s", relationType)
 	}
 
-	var follows []models.UserFollowInfo
+	follows := []models.UserFollowInfo{}
 	rows, err := db.Query(query, userId)
 
 	if err != nil {
