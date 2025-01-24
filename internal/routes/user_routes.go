@@ -15,5 +15,6 @@ func SetupUserRoutes(router *gin.Engine, db *sql.DB) {
 	userGroup := router.Group("/users")
 	{
 		userGroup.POST("/create", userController.CreateUserHandler) // POST /users crea un nuevo usuario
+		userGroup.GET("/:id", userController.GetUserByIdHandler)    // GET /:id obtengo un usuario dado un ID
 	}
 }
