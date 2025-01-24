@@ -8,6 +8,7 @@ import (
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/models"
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/services"
+	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -53,24 +54,28 @@ func (uc *UserController) GetUserByIdHandler(c *gin.Context) {
 	id, err := strconv.ParseInt(idStr, 10, 64)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid user ID",
-		})
+		badResponse := utils.ResponseToApi(http.StatusBadRequest, "Invalid user ID", false, 0, 0, 0)
+
+		c.JSON(http.StatusBadRequest, badResponse)
 		return
 	}
 
 	user, err := uc.UserService.GetUserById(id)
-	fmt.Println("------------------------")
-	fmt.Println(err)
-	fmt.Println("------------------------")
+
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Can't get user",
-		})
+
+		if err.Error() == "user not found" {
+			notFoundResponse := utils.ResponseToApi(404, err.Error(), false, 0, 0, 0)
+			c.JSON(404, notFoundResponse)
+			return
+		}
+
+		errorResponse := utils.ResponseToApi(http.StatusInternalServerError, err.Error(), false, 0, 0, 0)
+		c.JSON(http.StatusInternalServerError, errorResponse)
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{
-		"data": user,
-	})
+	response := utils.ResponseToApi(http.StatusOK, user, false, 0, 0, 0)
+
+	c.JSON(http.StatusOK, response)
 }

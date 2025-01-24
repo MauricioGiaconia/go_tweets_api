@@ -40,7 +40,7 @@ func (us *UserService) GetUserById(id int64) (models.User, error) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// Si no se encuentra el usuario, retornamos un error específico
-			return models.User{}, fmt.Errorf("user with id %d not found", id)
+			return models.User{}, fmt.Errorf("user not found")
 		}
 		return models.User{}, fmt.Errorf("[x] Error to get user: %v", err)
 	}

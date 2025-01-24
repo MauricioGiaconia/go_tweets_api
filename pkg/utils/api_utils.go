@@ -9,23 +9,23 @@ import (
 )
 
 type SuccessResponse struct {
-	Code int         `json:"code"`
+	Code int         `json:"code"` // Status http
 	Data interface{} `json:"data"` //Data es de tipo interface, esto se debe a que 'interface' puede contener cualquier tipo de dato y en "data" puede venir un json o un array
 }
 
 type SuccessListResponse struct {
-	Code     int           `json:"code"`
-	Data     []interface{} `json:"data"`
+	Code     int           `json:"code"`     // Status http
+	Data     []interface{} `json:"data"`     // Informacion de la respuesta
 	Count    int           `json:"count"`    // Total de elementos existentes en la BD
 	Limit    int           `json:"limit"`    // Maximo de elementos que se obtiene por pagina
-	Offset   int           `json:"offset"`   // Pagina actual
-	Next     string        `json:"next"`     // Campo para saber cual es el siguiente indce a consultar, sirve para el paginado
+	Offset   int           `json:"offset"`   // Paginado
+	Next     string        `json:"next"`     // Campo para saber cual es el siguiente indice a consultar, sirve para el paginado
 	Previous string        `json:"previous"` // Campo para saber el indice anterior a consultar, sirve para paginado
 }
 
 type ErrorResponse struct {
-	Code  int    `json:"code"`
-	Error string `json:"error"`
+	Code  int    `json:"code"`  // Status http
+	Error string `json:"error"` // Mensaje de error
 }
 
 type ApiCallOptions struct {
@@ -125,7 +125,7 @@ func buildErrorResponse(code int, data interface{}) ErrorResponse {
 	}
 	return ErrorResponse{
 		Code:  code,
-		Error: "Sorry, we had trouble processing the information",
+		Error: "Sorry, we had a trouble processing the information",
 	}
 }
 
