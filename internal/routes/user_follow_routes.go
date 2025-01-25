@@ -5,12 +5,13 @@ import (
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/controllers"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 // SetupUserRoutes configura las rutas para manejar usuarios.
-func SetupUserFollowRoutes(router *gin.Engine, db *sql.DB) {
+func SetupUserFollowRoutes(router *gin.Engine, db *sql.DB, rds *redis.Client) {
 
-	userFollowController := controllers.NewUseFollowrController(db)
+	userFollowController := controllers.NewUseFollowrController(db, rds)
 
 	userFollowGroup := router.Group("/users_follow")
 	{

@@ -10,14 +10,15 @@ import (
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/services"
 	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 type UserFollowController struct {
 	UserFollowService *services.FollowService
 }
 
-func NewUseFollowrController(db *sql.DB) *UserFollowController {
-	userFollowService := services.NewFollowService(db)
+func NewUseFollowrController(db *sql.DB, rds *redis.Client) *UserFollowController {
+	userFollowService := services.NewFollowService(db, rds)
 	return &UserFollowController{UserFollowService: userFollowService}
 }
 

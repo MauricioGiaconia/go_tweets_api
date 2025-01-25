@@ -18,3 +18,8 @@ type UserFollowInfo struct {
 	FollowUserData User      `json:"followUserData"`
 	FollowDate     time.Time `json:"followDate"`
 }
+
+type FollowsCache struct {
+	Follows    UserFollows `json:"follows"`
+	IsFullPage bool        `json:"isFullPage"`
+}

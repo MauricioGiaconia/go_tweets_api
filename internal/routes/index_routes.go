@@ -17,7 +17,7 @@ func SetupRoutes(router *gin.Engine, db *sql.DB, redisClient *redis.Client) {
 	SetupUserRoutes(router, db)
 
 	// Rutas relacionadas con seguidores
-	SetupUserFollowRoutes(router, db)
+	SetupUserFollowRoutes(router, db, redisClient)
 
 	// Rutas relacionadas con tweets
 	SetupTweetRoutes(router, db, redisClient)

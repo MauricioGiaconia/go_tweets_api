@@ -1,11 +1,14 @@
 package repositories
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/models"
+	"github.com/redis/go-redis/v9"
 )
 
 func FollowUser(db *sql.DB, userFollow *models.UserFollow) (bool, error) {
@@ -110,4 +113,39 @@ func CountFollows(db *sql.DB, userId int64, relationType string) (int64, error) 
 	}
 
 	return totalFollows, nil
+}
+
+//Funciones para interactuar con redis respecto a los Follows
+
+func GetFollowsFromCache(redisClient *redis.Client, cacheKey string) (*models.FollowsCache, error) {
+	var ctx = context.Background()
+	cachedFollowsData, err := redisClient.Get(ctx, cacheKey).Result()
+	if err == redis.Nil {
+		return nil, nil // No hay datos en cache
+	} else if err != nil {
+		return nil, fmt.Errorf("Error getting data from Redis: %v", err)
+	}
+
+	var cachedFollows models.FollowsCache
+	err = json.Unmarshal([]byte(cachedFollowsData), &cachedFollows)
+	if err != nil {
+		return nil, fmt.Errorf("Error deserializing Redis data: %v", err)
+	}
+
+	return &cachedFollows, nil
+}
+
+func SaveFollowsToCache(redisClient *redis.Client, cacheKey string, follows *models.FollowsCache, ttl time.Duration) error {
+	var ctx = context.Background()
+	followsJSON, err := json.Marshal(follows)
+	if err != nil {
+		return fmt.Errorf("Error serializing data for Redis: %v", err)
+	}
+
+	err = redisClient.Set(ctx, cacheKey, followsJSON, ttl).Err()
+	if err != nil {
+		return fmt.Errorf("Error setting value in Redis: %v", err)
+	}
+
+	return nil
 }
