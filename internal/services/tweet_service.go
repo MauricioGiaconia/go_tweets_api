@@ -6,19 +6,21 @@ import (
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/models"
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/repositories"
+	"github.com/redis/go-redis/v9"
 )
 
 type TweetService struct {
-	DB *sql.DB
+	DB  *sql.DB       // Conexion a db SQL
+	RDB *redis.Client // Conexion a db redis
 }
 
-func NewTweetService(db *sql.DB) *TweetService {
-	return &TweetService{DB: db}
+func NewTweetService(db *sql.DB, rdb *redis.Client) *TweetService {
+	return &TweetService{DB: db, RDB: rdb}
 }
 
 func (ts *TweetService) GetUserTimeline(followerId *int64, limit *int64, offset *int64) ([]models.Tweet, error) {
 
-	timeline, err := repositories.GetTweetsTimeline(ts.DB, followerId, limit, offset)
+	timeline, err := repositories.GetTweetsTimeline(ts.DB, ts.RDB, followerId, limit, offset)
 
 	if err != nil {
 		return nil, fmt.Errorf("Error getting timeline: %v", err)

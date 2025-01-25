@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/routes"
@@ -26,18 +27,25 @@ func main() {
 		log.Fatalf("[x] Error getting database instance: %v", err)
 	}
 
-	conn, err := dbInstance.Connect()
+	dbConn, err := dbInstance.Connect()
 
 	if err != nil {
 		log.Fatalf("[x] Error connecting to database: %v", err)
 	}
 
+	redisClient, err := factory.GetCache("redis")
+	if err != nil {
+		fmt.Println("API working without redis: %v", err.Error())
+	} else {
+		defer redisClient.Close()
+	}
+
 	router := gin.Default()
 
 	// Configurar las rutas
-	routes.SetupRoutes(router, conn)
-
-	defer db.CloseDatabase(conn)
+	routes.SetupRoutes(router, dbConn, redisClient)
+	fmt.Println("LLEGO? :D")
+	defer db.CloseDatabase(dbConn)
 
 	router.Run(":8080")
 }

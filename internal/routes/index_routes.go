@@ -7,10 +7,11 @@ import (
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 // Todas las rutas estaran centralizadas en SetupRoutes
-func SetupRoutes(router *gin.Engine, db *sql.DB) {
+func SetupRoutes(router *gin.Engine, db *sql.DB, redisClient *redis.Client) {
 
 	// Rutas relacionadas con usuarios
 	SetupUserRoutes(router, db)
@@ -19,7 +20,7 @@ func SetupRoutes(router *gin.Engine, db *sql.DB) {
 	SetupUserFollowRoutes(router, db)
 
 	// Rutas relacionadas con tweets
-	SetupTweetRoutes(router, db)
+	SetupTweetRoutes(router, db, redisClient)
 
 	//Endpoint ping para probar el funcionamiento de la API
 	router.GET("/ping", func(c *gin.Context) {

@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/db"
+	redisdb "github.com/MauricioGiaconia/uala_backend_challenge/pkg/redis_db"
+	"github.com/redis/go-redis/v9"
 )
 
 // GetDatabase crea una instancia de la base de datos que se solicite (SQLite o PostgreSQL)
@@ -18,12 +20,16 @@ func GetDatabase(dbType string) (db.Database, error) {
 	}
 }
 
-// // GetCache crea una instancia del cache solicitado (Redis)
-// func GetCache(cacheType string) (interface{}, error) {
-// 	switch cacheType {
-// 	case "redis":
-// 		return &cache.RedisCache{}, nil
-// 	default:
-// 		return nil, fmt.Errorf("[x] Invalid cache type: %s", cacheType)
-// 	}
-// }
+// GetCache crea una instancia del cache solicitado (Redis)
+func GetCache(cacheType string) (*redis.Client, error) {
+	switch cacheType {
+	case "redis":
+		client, err := redisdb.NewRedisClient("tes", "test", 0)
+		if err != nil {
+			return nil, err
+		}
+		return client, nil
+	default:
+		return nil, fmt.Errorf("[x] Invalid cache type: %s", cacheType)
+	}
+}

@@ -10,14 +10,15 @@ import (
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/services"
 	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 type TweetController struct {
 	TweetService *services.TweetService
 }
 
-func NewTweetController(db *sql.DB) *TweetController {
-	tweetService := services.NewTweetService(db)
+func NewTweetController(db *sql.DB, rdb *redis.Client) *TweetController {
+	tweetService := services.NewTweetService(db, rdb)
 	return &TweetController{TweetService: tweetService}
 }
 
