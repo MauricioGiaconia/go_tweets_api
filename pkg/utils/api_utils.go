@@ -10,29 +10,29 @@ import (
 )
 
 type SuccessResponse struct {
-	Code int         `json:"code"` // Status http
+	Code int64       `json:"code"` // Status http
 	Data interface{} `json:"data"` //Data es de tipo interface, esto se debe a que 'interface' puede contener cualquier tipo de dato y en "data" puede venir un json o un array
 }
 
 type SuccessListResponse struct {
-	Code     int         `json:"code"`     // Status http
-	Data     interface{} `json:"data"`     // Informacion de la respuesta
-	Count    int         `json:"count"`    // Total de elementos existentes en la BD
-	Limit    int         `json:"limit"`    // Maximo de elementos que se obtiene por pagina
-	Offset   int         `json:"offset"`   // Paginado
-	Next     string      `json:"next"`     // Campo para saber cual es el siguiente indice a consultar, sirve para el paginado
-	Previous string      `json:"previous"` // Campo para saber el indice anterior a consultar, sirve para paginado
+	Code     int64       `json:"code"`               // Status http
+	Data     interface{} `json:"data"`               // Informacion de la respuesta
+	Count    int64       `json:"count"`              // Total de elementos existentes en la BD
+	Limit    int64       `json:"limit"`              // Maximo de elementos que se obtiene por pagina
+	Offset   int64       `json:"offset"`             // Paginado
+	Next     string      `json:"next,omitempty"`     // Campo para saber cual es el siguiente indice a consultar, sirve para el paginado
+	Previous string      `json:"previous,omitempty"` // Campo para saber el indice anterior a consultar, sirve para paginado
 }
 
 type ErrorResponse struct {
-	Code  int    `json:"code"`  // Status http
+	Code  int64  `json:"code"`  // Status http
 	Error string `json:"error"` // Mensaje de error
 }
 
 type ApiCallOptions struct {
 	Headers Headers
 	Method  string
-	Timeout int
+	Timeout int64
 	Body    []byte
 }
 
@@ -85,7 +85,7 @@ func ApiCall(url string, opts ApiCallOptions) (interface{}, error) {
 
 	// Verifica el código de estado de la respuesta
 	if resp.StatusCode >= 400 {
-		return buildErrorResponse(resp.StatusCode, "API call failed"), errors.New(string(body))
+		return buildErrorResponse(int64(resp.StatusCode), "API call failed"), errors.New(string(body))
 	}
 
 	//Construyo la respueste exitosa para retornar
@@ -100,7 +100,7 @@ func ApiCall(url string, opts ApiCallOptions) (interface{}, error) {
 // Metodo encargado de construir la respuesta que tendrán los distintos endpoints.
 // Para una respuesta de un unico dato exitoso, bastará con enviar como argumento "code" y "data".
 // En cambio, si la respuesta será un listado que requiere paginado, se deberán mandar todos los argumentos permitidos por la funcion
-func ResponseToApi(code int, data interface{}, isAList bool, count int, limit int, offset int) interface{} {
+func ResponseToApi(code int64, data interface{}, isAList bool, count int64, limit int64, offset int64) interface{} {
 	if code >= 400 {
 		return buildErrorResponse(code, data)
 	}
@@ -117,7 +117,7 @@ func ResponseToApi(code int, data interface{}, isAList bool, count int, limit in
 	return successResponse
 }
 
-func buildErrorResponse(code int, data interface{}) ErrorResponse {
+func buildErrorResponse(code int64, data interface{}) ErrorResponse {
 	if str, ok := data.(string); ok {
 		return ErrorResponse{
 			Code:  code,
@@ -130,9 +130,9 @@ func buildErrorResponse(code int, data interface{}) ErrorResponse {
 	}
 }
 
-func buildSuccessListResponse(code int, data interface{}, count int, limit int, offset int) interface{} {
+func buildSuccessListResponse(code int64, data interface{}, count int64, limit int64, offset int64) interface{} {
 	if finalData, ok := data.(interface{}); ok {
-		fmt.Println("Entro en json")
+
 		return SuccessListResponse{
 			Code:     code,
 			Data:     finalData,
@@ -150,14 +150,14 @@ func buildSuccessListResponse(code int, data interface{}, count int, limit int, 
 	}
 }
 
-func calculateNextURL(limit, offset, count int) string {
+func calculateNextURL(limit, offset, count int64) string {
 	if offset+limit >= count {
 		return "" // No hay más datos para la siguiente página
 	}
 	return fmt.Sprintf("?limit=%d&offset=%d", limit, offset+limit)
 }
 
-func calculatePreviousURL(limit, offset int) string {
+func calculatePreviousURL(limit, offset int64) string {
 	if offset-limit < 0 {
 		return "" // No hay datos para la página anterior
 	}

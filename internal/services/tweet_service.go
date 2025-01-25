@@ -16,15 +16,25 @@ func NewTweetService(db *sql.DB) *TweetService {
 	return &TweetService{DB: db}
 }
 
-func (ts *TweetService) GetUserTimeline(followerId *int64) ([]models.Tweet, error) {
+func (ts *TweetService) GetUserTimeline(followerId *int64, limit *int64, offset *int64) ([]models.Tweet, error) {
 
-	timeline, err := repositories.GetTweetsTimeline(ts.DB, followerId)
+	timeline, err := repositories.GetTweetsTimeline(ts.DB, followerId, limit, offset)
 
 	if err != nil {
 		return nil, fmt.Errorf("Error getting timeline: %v", err)
 	}
 
 	return timeline, nil
+}
+
+func (ts *TweetService) CountTimeline(followerId *int64) (int64, error) {
+	total, err := repositories.CountTweetsTimeline(ts.DB, followerId)
+
+	if err != nil {
+		return 0, fmt.Errorf("Error counting timeline: %v", err)
+	}
+
+	return total, nil
 }
 
 func (ts *TweetService) PostTweet(tweet *models.Tweet) (bool, error) {

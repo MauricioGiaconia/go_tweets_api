@@ -51,18 +51,21 @@ func GetTweetsByUserId(db *sql.DB, userId *int64) ([]models.Tweet, error) {
 }
 
 // Funcion para obtener el timeline de los usuarios a los que se sigue
-func GetTweetsTimeline(db *sql.DB, userId *int64) ([]models.Tweet, error) {
+func GetTweetsTimeline(db *sql.DB, userId *int64, limit *int64, offset *int64) ([]models.Tweet, error) {
 	query := `SELECT tw.id as tw_id, tw.user_id, us.name, tw.content, tw.created_at as tweet_date
 				FROM tweets AS tw
 				INNER JOIN follows AS fol ON fol.followed_id = tw.user_id
 				INNER JOIN users AS us ON us.id = tw.user_id
 				WHERE fol.follower_id = $1
-				ORDER BY tweet_date DESC;`
-	rows, err := db.Query(query, userId)
+				ORDER BY tweet_date DESC
+				LIMIT $2
+				OFFSET $3;`
+	rows, err := db.Query(query, userId, limit, offset)
 
 	if err != nil {
 		return nil, fmt.Errorf("Error fetching timeline: %v", err)
 	}
+	defer rows.Close()
 
 	timeline := []models.Tweet{}
 
@@ -83,4 +86,32 @@ func GetTweetsTimeline(db *sql.DB, userId *int64) ([]models.Tweet, error) {
 	}
 
 	return timeline, nil
+}
+
+func CountTweetsTimeline(db *sql.DB, userId *int64) (int64, error) {
+	query := `SELECT COUNT(*) AS total_tweets
+				FROM tweets AS tw
+				INNER JOIN follows AS fol ON fol.followed_id = tw.user_id
+				INNER JOIN users AS us ON us.id = tw.user_id
+				WHERE fol.follower_id = $1;`
+
+	rows, err := db.Query(query, userId)
+	if err != nil {
+		return 0, fmt.Errorf("Error fetching timeline: %v", err)
+	}
+	defer rows.Close()
+
+	var totalTweets int64
+
+	if rows.Next() {
+		err = rows.Scan(&totalTweets)
+		if err != nil {
+			return 0, fmt.Errorf("Error scanning row: %v", err)
+		}
+	} else {
+
+		return 0, fmt.Errorf("No rows found")
+	}
+
+	return totalTweets, nil
 }
