@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -27,25 +26,24 @@ func (uc *UserController) CreateUserHandler(c *gin.Context) {
 
 	// Decodificamos el cuerpo de la solicitud JSON al struct User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("[x] Error decoding body: %v", err),
-		})
+		badResponse := utils.ResponseToApi(http.StatusBadRequest, "[x] Error decoding body: "+err.Error(), false, 0, 0, 0)
+		c.JSON(http.StatusBadRequest, badResponse)
 		return
 	}
 
 	// Llamamos al servicio para crear el usuario
 	userID, err := uc.UserService.CreateUser(&user)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("[x] Error creating user: %v", err),
-		})
+		badResponse := utils.ResponseToApi(http.StatusBadRequest, "[x] Error creating user: "+err.Error(), false, 0, 0, 0)
+		c.JSON(http.StatusBadRequest, badResponse)
 		return
 	}
 
 	// Respondemos con el ID del usuario creado
-	c.JSON(http.StatusCreated, gin.H{
+	response := utils.ResponseToApi(http.StatusCreated, gin.H{
 		"id": userID,
-	})
+	}, false, 0, 0, 0)
+	c.JSON(http.StatusCreated, response)
 }
 
 // GetUserByIdHandler maneja la solicitud de obtener un usuario por su ID.
