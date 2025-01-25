@@ -74,8 +74,40 @@ func (ufc *UserFollowController) GetFollowersHandler(c *gin.Context) {
 		return
 	}
 
+	limitStr := c.Query("limit")
+	offsetStr := c.Query("offset")
+
+	const defaultLimit int64 = 25 // Por defecto, vendran 25 tweets por pagina
+	const defaultOffset int64 = 0
+	const maxLimit int64 = 100 // Limite máximo permitido
+
+	var limit, offset int64
+	var paramError error
+
+	if limitStr != "" {
+		limit, paramError = strconv.ParseInt(limitStr, 10, 64)
+		if err != nil || limit <= 0 || limit > maxLimit {
+			badResponse := utils.ResponseToApi(http.StatusBadRequest, "Invalid limit parameter", false, 0, 0, 0)
+			c.JSON(http.StatusBadRequest, badResponse)
+			return
+		}
+	} else {
+		limit = defaultLimit
+	}
+
+	if offsetStr != "" {
+		offset, paramError = strconv.ParseInt(offsetStr, 10, 64)
+		if paramError != nil || offset < 0 {
+			badResponse := utils.ResponseToApi(http.StatusBadRequest, "Invalid offset parameter", false, 0, 0, 0)
+			c.JSON(http.StatusBadRequest, badResponse)
+			return
+		}
+	} else {
+		offset = defaultOffset
+	}
+
 	// Llamamos al servicio para obtener el usuario
-	userFollowInfo, err := ufc.UserFollowService.GetFollows(&id, &relationType)
+	userFollowInfo, err := ufc.UserFollowService.GetFollows(&id, &relationType, &limit, &offset)
 
 	if err != nil {
 		errorResponse := utils.ResponseToApi(http.StatusInternalServerError, err.Error(), false, 0, 0, 0)
@@ -83,7 +115,14 @@ func (ufc *UserFollowController) GetFollowersHandler(c *gin.Context) {
 		return
 	}
 
+	totalFollows, err := ufc.UserFollowService.CountFollows(&id, &relationType)
+
+	if err != nil {
+		//Ideal: Implementar creacion de log indicando cual fue el error en el count
+		fmt.Println(err)
+	}
+
 	// Respondemos con los seguidores/seguidos del usuario en formato JSON junto a la informacion del paginado
-	response := utils.ResponseToApi(http.StatusOK, userFollowInfo, true, 0, 0, 0)
+	response := utils.ResponseToApi(http.StatusOK, userFollowInfo, true, totalFollows, limit, offset)
 	c.JSON(http.StatusOK, response)
 }

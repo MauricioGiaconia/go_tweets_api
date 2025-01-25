@@ -26,18 +26,28 @@ func (ufs *FollowService) FollowUser(follow *models.UserFollow) (bool, error) {
 	return userFollow, nil
 }
 
-func (ufs *FollowService) GetFollows(userId *int64, relationType *string) (models.UserFollows, error) {
+func (ufs *FollowService) GetFollows(userId *int64, relationType *string, limit *int64, offset *int64) (models.UserFollows, error) {
 
 	// Validar que el relationType sea el adecuado segun la logica implementada en el repository
 	if *relationType != "followers" && *relationType != "following" {
 
 		return models.UserFollows{}, fmt.Errorf("Invalid follow type. Must be 'followers' or 'following'")
 	}
-	userFollowers, err := repositories.GetFollows(ufs.DB, *userId, *relationType)
+	userFollowers, err := repositories.GetFollows(ufs.DB, *userId, *relationType, limit, offset)
 
 	if err != nil {
 		return models.UserFollows{}, fmt.Errorf("Error getting followers: %v", err)
 	}
 
 	return *userFollowers, nil
+}
+
+func (ufs *FollowService) CountFollows(userId *int64, relationType *string) (int64, error) {
+	total, err := repositories.CountFollows(ufs.DB, *userId, *relationType)
+
+	if err != nil {
+		return 0, fmt.Errorf("Error counting timeline: %v", err)
+	}
+
+	return total, nil
 }
