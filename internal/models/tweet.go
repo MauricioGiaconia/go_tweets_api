@@ -9,3 +9,8 @@ type Tweet struct {
 	Content    string    `json:"content"`    // Contenido del tweet
 	CreatedAt  time.Time `json:"createdAt"`  // Fecha de creación
 }
+
+type TimelineCache struct {
+	Tweets     []Tweet `json:"tweets"`
+	IsFullPage bool    `json:"isFullPage"`
+}
