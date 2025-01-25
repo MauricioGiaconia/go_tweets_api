@@ -22,25 +22,20 @@ func FollowUser(db *sql.DB, userFollow *models.UserFollow) (bool, error) {
 
 func GetFollows(db *sql.DB, userId int64, relationType string) (*models.UserFollows, error) {
 	query := `SELECT u.id, u.name, u.email, u.created_at, f.created_at AS follow_date
-				FROM users u
-				JOIN follows f ON u.id = f.follower_id
-				WHERE f.followed_id = $1`
+				FROM users u `
 
 	// Determinar la consulta según el tipo de relación
 	if relationType == "followers" {
-		query = `SELECT u.id, u.name, u.email, u.created_at, f.created_at AS follow_date
-				FROM users u
-				JOIN follows f ON u.id = f.follower_id
-				WHERE f.followed_id = $1`
+		query += `JOIN follows f ON u.id = f.follower_id
+				WHERE f.followed_id = $1 `
 	} else if relationType == "following" {
-		query = `SELECT u.id, u.name, u.email, u.created_at, f.created_at AS follow_date
-				FROM users u
-				JOIN follows f ON u.id = f.followed_id
-				WHERE f.follower_id = $1`
+		query += `JOIN follows f ON u.id = f.followed_id
+				WHERE f.follower_id = $1 `
 	} else {
 		return nil, fmt.Errorf("Invalid relationType: %s", relationType)
 	}
 
+	query += `ORDER BY follow_date DESC;`
 	follows := []models.UserFollowInfo{}
 	rows, err := db.Query(query, userId)
 
