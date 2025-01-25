@@ -74,6 +74,7 @@ func GetTweetsTimeline(db *sql.DB, redisClient *redis.Client, userId *int64, lim
 				//Ideal: Generar log de auditoria para saber porque falló la deserialización
 				fmt.Println("Error deserializing Redis data: %v", err)
 			} else {
+				fmt.Println("Data founded in Redis!")
 				// Si se encuentra en cache, devolver el resultado
 				return cachedTimeline, nil
 			}
@@ -122,13 +123,13 @@ func GetTweetsTimeline(db *sql.DB, redisClient *redis.Client, userId *int64, lim
 		//Preparo el time line en formato json para guardarlos en Redis
 		timelineJSON, err := json.Marshal(timeline)
 		if err != nil {
-			return nil, fmt.Errorf("Error serializing data for Redis: %v", err)
+			fmt.Println("Error serializing data for Redis: %v", err)
 		}
 
 		//Establezco ttl de 1 hora, pasado ese tiempo, la data se borra del cache
 		err = redisClient.Set(ctx, cacheKey, timelineJSON, 1*time.Hour).Err()
 		if err != nil {
-			return nil, fmt.Errorf("Error to set value in Redis: %v", err)
+			fmt.Println("Error to set value in Redis: %v", err)
 		}
 	}
 
