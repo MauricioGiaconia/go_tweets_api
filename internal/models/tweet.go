@@ -3,8 +3,9 @@ package models
 import "time"
 
 type Tweet struct {
-	ID        string    `json:"id"`         // Identificador unico del tweet
-	UserID    string    `json:"user_id"`    // Identificador del usuario creador del tweet
-	Content   string    `json:"content"`    // Contenido del tweet
-	CreatedAt time.Time `json:"created_at"` // Fecha de creación
+	ID         int64     `json:"tweetId"`    // Identificador unico del tweet
+	UserID     int64     `json:"authorId"`   // Identificador del usuario creador del tweet
+	AuthorName *string   `json:"authorName"` // Campo opcional: Nombre del usuario creador del tweet
+	Content    string    `json:"content"`    // Contenido del tweet
+	CreatedAt  time.Time `json:"createdAt"`  // Fecha de creación
 }

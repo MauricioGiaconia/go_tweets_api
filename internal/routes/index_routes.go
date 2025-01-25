@@ -14,7 +14,12 @@ func SetupRoutes(router *gin.Engine, db *sql.DB) {
 
 	// Rutas relacionadas con usuarios
 	SetupUserRoutes(router, db)
+
+	// Rutas relacionadas con seguidores
 	SetupUserFollowRoutes(router, db)
+
+	// Rutas relacionadas con tweets
+	SetupTweetRoutes(router, db)
 
 	//Endpoint ping para probar el funcionamiento de la API
 	router.GET("/ping", func(c *gin.Context) {

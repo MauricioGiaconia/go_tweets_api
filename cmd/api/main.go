@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/routes"
@@ -11,7 +12,15 @@ import (
 
 func main() {
 
-	dbInstance, err := factory.GetDatabase("postgres") //Esta hardcodeado sqlite, lo ideal seria recibir por variable de entorno la base de datos a utilziar
+	//Obtengo el tipo de db a utilizar por linea de comandos, usando la flag -db
+	dbType := flag.String("db", "sqlite", "Tipo de base de datos a usar (postgres, sqlite)")
+	flag.Parse()
+
+	if *dbType != "sqlite" && *dbType != "postgres" {
+		log.Fatalf("[x] Invalid dbType")
+	}
+
+	dbInstance, err := factory.GetDatabase(*dbType)
 
 	if err != nil {
 		log.Fatalf("[x] Error getting database instance: %v", err)
