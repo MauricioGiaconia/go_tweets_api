@@ -80,8 +80,8 @@ func (ts *TweetService) CountTimeline(followerId *int64) (int64, error) {
 
 func (ts *TweetService) PostTweet(tweet *models.Tweet) (bool, error) {
 	const maxCharacters int = 280 //Maximos de caracteres permitidos en un tweet
-
-	if len(tweet.Content) > maxCharacters {
+	//El len se hace sobre rune para tratar de forma correct a los caracteres multibtyes (como acentos, simbolos etc etc)
+	if len([]rune(tweet.Content)) > maxCharacters {
 		return false, fmt.Errorf("The content of the tweet must not exceed 280 characters")
 	}
 

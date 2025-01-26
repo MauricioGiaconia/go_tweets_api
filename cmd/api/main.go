@@ -44,7 +44,7 @@ func main() {
 
 	// Configurar las rutas
 	routes.SetupRoutes(router, dbConn, redisClient)
-	fmt.Println("LLEGO? :D")
+
 	defer db.CloseDatabase(dbConn)
 
 	router.Run(":8080")
