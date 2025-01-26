@@ -21,6 +21,12 @@ func NewTweetService(db *sql.DB, rdb *redis.Client) *TweetService {
 
 func (ts *TweetService) GetUserTimeline(followerId *int64, limit *int64, offset *int64) ([]models.Tweet, error) {
 
+	_, err := repositories.GetUserById(ts.DB, *followerId)
+
+	if err != nil {
+		return nil, fmt.Errorf("Nonexistent user")
+	}
+
 	cacheKey := fmt.Sprintf("timeline:%d:%d:%d", *followerId, *limit, *offset)
 
 	if ts.RDB != nil {

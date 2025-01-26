@@ -184,17 +184,15 @@ func TestGetTimeline(t *testing.T) {
 	assert.Equal(t, response.Limit, 25)
 	assert.Equal(t, response.Offset, 0)
 
+	var errorResponse ErrorTweetResponse
 	// Obtencion del timeline de un usuario inexistente
 	w = makeRequest(t, "GET", "/tweets/999/timeline", nil, router)
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 
-	err = json.Unmarshal(w.Body.Bytes(), &response)
+	err = json.Unmarshal(w.Body.Bytes(), &errorResponse)
 
 	assert.NoError(t, err)
-	assert.Len(t, response.Data, 0)
-	assert.Equal(t, response.Count, 0)
-	assert.Equal(t, response.Limit, 25)
-	assert.Equal(t, response.Offset, 0)
+	assert.Contains(t, errorResponse.Error, "Nonexistent user")
 }
 
 func getMockRedis() *redis.Client {

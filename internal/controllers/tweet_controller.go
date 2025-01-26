@@ -109,6 +109,12 @@ func (tc *TweetController) GetTimelineHandler(c *gin.Context) {
 	timeline, err := tc.TweetService.GetUserTimeline(&id, &limit, &offset)
 
 	if err != nil {
+		if err.Error() == "Nonexistent user" {
+			badResponse := utils.ResponseToApi(http.StatusBadRequest, err.Error(), false, 0, 0, 0)
+			c.JSON(http.StatusBadRequest, badResponse)
+			return
+		}
+
 		errorResponse := utils.ResponseToApi(http.StatusInternalServerError, err.Error(), false, 0, 0, 0)
 		c.JSON(http.StatusInternalServerError, errorResponse)
 		return
