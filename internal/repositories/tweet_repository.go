@@ -12,14 +12,20 @@ import (
 )
 
 // Funciones para interactura con db SQL
-
 func PostTweet(db *sql.DB, tweet *models.Tweet) (bool, error) {
+	tx, err := db.Begin() //Se inicia transaccion para ejecutar Rollback si algo sale mal
 	query := `INSERT INTO tweets (user_id, content) VALUES ($1, $2)`
 
-	_, err := db.Exec(query, tweet.UserID, tweet.Content)
+	_, err = tx.Exec(query, tweet.UserID, tweet.Content)
 	if err != nil {
-		fmt.Println("[x] Error to create follow: %v", err)
-		return false, fmt.Errorf("[x] Error to create follow: %v", err)
+		tx.Rollback()
+		fmt.Println("[x] Error to create Tweet: %v", err)
+		return false, fmt.Errorf("[x] Error to create Tweet: %v", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return false, fmt.Errorf("Error committing transaction: %v", err)
 	}
 
 	return true, nil

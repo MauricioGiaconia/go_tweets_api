@@ -20,6 +20,19 @@ func NewFollowService(db *sql.DB, rdb *redis.Client) *FollowService {
 }
 
 func (ufs *FollowService) FollowUser(follow *models.UserFollow) (bool, error) {
+
+	_, err := repositories.GetUserById(ufs.DB, follow.FollowedID)
+
+	if err != nil {
+		return false, fmt.Errorf("Nonexistent followed ID user")
+	}
+
+	_, err = repositories.GetUserById(ufs.DB, follow.FollowedID)
+
+	if err != nil {
+		return false, fmt.Errorf("Nonexistent follower ID user")
+	}
+
 	userFollow, err := repositories.FollowUser(ufs.DB, follow)
 
 	if err != nil {
@@ -39,18 +52,20 @@ func (ufs *FollowService) GetFollows(userId *int64, relationType *string, limit 
 
 	cacheKey := fmt.Sprintf("follows:%d:%d:%d:%d", *userId, *relationType, *limit, *offset)
 
-	cachedFollows, err := repositories.GetFollowsFromCache(ufs.RDB, cacheKey)
-	if err != nil {
-		fmt.Println("Error getting follows from Redis: %v", err) // No detengo la ejecución asi se intenta obtener la data solicitada desde la DB sql
-	}
-
-	// Si los datos están en cache, los devolvemos
-	if cachedFollows != nil {
-		if cachedFollows.IsFullPage {
-			fmt.Println("[x] Returning data from cache!")
-			return cachedFollows.Follows, nil
+	if ufs.RDB != nil {
+		cachedFollows, err := repositories.GetFollowsFromCache(ufs.RDB, cacheKey)
+		if err != nil {
+			fmt.Println("Error getting follows from Redis: %v", err) // No detengo la ejecución asi se intenta obtener la data solicitada desde la DB sql
 		}
-		fmt.Println("[x] The timeline consulted may be outdated, searching for information in the sql database...")
+
+		// Si los datos están en cache, los devolvemos
+		if cachedFollows != nil {
+			if cachedFollows.IsFullPage {
+				fmt.Println("[x] Returning data from cache!")
+				return cachedFollows.Follows, nil
+			}
+			fmt.Println("[x] The timeline consulted may be outdated, searching for information in the sql database...")
+		}
 	}
 
 	userFollows, err := repositories.GetFollows(ufs.DB, *userId, *relationType, limit, offset)
@@ -59,25 +74,26 @@ func (ufs *FollowService) GetFollows(userId *int64, relationType *string, limit 
 		return models.UserFollows{}, fmt.Errorf("Error getting follows: %v", err)
 	}
 
-	isFullPage := int64(len(userFollows.Follows)) == *limit
+	if ufs.RDB != nil {
+		isFullPage := int64(len(userFollows.Follows)) == *limit
 
-	followsCache := models.FollowsCache{
-		Follows:    *userFollows,
-		IsFullPage: isFullPage,
+		followsCache := models.FollowsCache{
+			Follows:    *userFollows,
+			IsFullPage: isFullPage,
+		}
+
+		ttl := 30 * time.Minute
+
+		if !isFullPage {
+			//En caso que la pagina NO este completa, se mantiene un time to live menor
+			ttl = 10 * time.Minute
+		}
+
+		err = repositories.SaveFollowsToCache(ufs.RDB, cacheKey, &followsCache, ttl)
+		if err != nil {
+			fmt.Println("Error saving timeline to Redis: %v", err) // Si no se pudo guardar la data en cache, retorno de todas formas la informacion obtenida de la db sql
+		}
 	}
-
-	ttl := 30 * time.Minute
-
-	if !isFullPage {
-		//En caso que la pagina NO este completa, se mantiene un time to live menor
-		ttl = 10 * time.Minute
-	}
-
-	err = repositories.SaveFollowsToCache(ufs.RDB, cacheKey, &followsCache, ttl)
-	if err != nil {
-		fmt.Println("Error saving timeline to Redis: %v", err) // Si no se pudo guardar la data en cache, retorno de todas formas la informacion obtenida de la db sql
-	}
-
 	return *userFollows, nil
 }
 
