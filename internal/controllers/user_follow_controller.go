@@ -34,9 +34,8 @@ func (ufc *UserFollowController) FollowUserHandler(c *gin.Context) {
 	}
 
 	if follow.FollowerID == follow.FollowedID {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Cannot follow yourself",
-		})
+		badResponse := utils.ResponseToApi(http.StatusBadRequest, "Cannot follow yourself", false, 0, 0, 0)
+		c.JSON(http.StatusBadRequest, badResponse)
 		return
 	}
 
