@@ -28,8 +28,8 @@ DB_PORT=...
 
 Para ejecutar este proyecto, puedes elegir entre dos opciones. En ambas, debes ejecutar los comandos desde la terminal, ubicada en la raíz del proyecto:
 
-* Utilizar Docker.
-* Ejecutarlo de forma manual (sin Docker).
+- Utilizar Docker.
+- Ejecutarlo de forma manual (sin Docker).
 
 ### Ejecución con Docker
 
@@ -107,7 +107,7 @@ docker run --name redis -p 6379:6379 -d redis
 docker exec -it redis redis-cli
 ```
 
-#### Instalación de dependencias:
+#### Instalación de dependencias
 
 ```bash
 go mod tidy
@@ -141,5 +141,3 @@ Si la API esta funcionando correctamente, deberías ver el siguiente mensaje com
     "data":"pong"
 }
 ```
-
-
