@@ -1,26 +1,18 @@
-package test
+package functional
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/MauricioGiaconia/uala_backend_challenge/internal/routes"
 	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/factory"
-	"github.com/gin-gonic/gin"
+	"github.com/MauricioGiaconia/uala_backend_challenge/tests/go/test"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 )
-
-func setupRouter(db *sql.DB, rdb *redis.Client) *gin.Engine {
-	router := gin.Default()
-	routes.SetupRoutes(router, db, rdb)
-	return router
-}
 
 type CreateUserRequest struct {
 	Name     string `json:"name"`
@@ -31,11 +23,6 @@ type CreateUserRequest struct {
 type CreateUserResponse struct {
 	Code int   `json:"code"`
 	Data int64 `json:"data"`
-}
-
-type ErrorResponse struct {
-	Code  int    `json:"code"`
-	Error string `json:"error"`
 }
 
 func TestUserCreation(t *testing.T) {
@@ -52,7 +39,7 @@ func TestUserCreation(t *testing.T) {
 
 	defer conn.Close()
 
-	router := setupRouter(conn, &redis.Client{})
+	router := test.SetupRouter(conn, &redis.Client{})
 
 	// Se crea un user para realizar el test de tweetear
 	userPayload := map[string]interface{}{
@@ -104,7 +91,7 @@ func TestUserCreation(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.data, response.Data)
 			} else {
-				var errorResponse ErrorResponse
+				var errorResponse test.ErrorResponse
 				err := json.Unmarshal(w.Body.Bytes(), &errorResponse)
 				assert.NoError(t, err, "Error deserializando el cuerpo de la respuesta con error")
 				assert.Equal(t, tc.expected, errorResponse.Code)

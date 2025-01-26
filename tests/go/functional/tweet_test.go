@@ -1,26 +1,18 @@
-package test
+package functional
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/MauricioGiaconia/uala_backend_challenge/internal/routes"
 	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/factory"
-	"github.com/gin-gonic/gin"
+	"github.com/MauricioGiaconia/uala_backend_challenge/tests/go/test"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 )
-
-func setupRouter(db *sql.DB, rdb *redis.Client) *gin.Engine {
-	router := gin.Default()
-	routes.SetupRoutes(router, db, rdb)
-	return router
-}
 
 type CreateTweetRequest struct {
 	Content string `json:"content"`
@@ -30,11 +22,6 @@ type CreateTweetRequest struct {
 type CreateTweetResponse struct {
 	Code int    `json:"code"`
 	Data string `json:"data"`
-}
-
-type ErrorResponse struct {
-	Code  int    `json:"code"`
-	Error string `json:"error"`
 }
 
 func TestTweetCreation(t *testing.T) {
@@ -52,7 +39,7 @@ func TestTweetCreation(t *testing.T) {
 
 	defer conn.Close()
 
-	router := setupRouter(conn, rdb)
+	router := test.SetupRouter(conn, rdb)
 
 	// Se crea un user para realizar el test de tweetear
 	userPayload := map[string]interface{}{
@@ -101,7 +88,7 @@ func TestTweetCreation(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.message, response.Data)
 			} else {
-				var errorResponse ErrorResponse
+				var errorResponse test.ErrorResponse
 				err := json.Unmarshal(w.Body.Bytes(), &errorResponse)
 				assert.NoError(t, err, "Error deserializando el cuerpo de la respuesta con error")
 				assert.Equal(t, tc.expected, errorResponse.Code)
@@ -126,7 +113,7 @@ func TestGetTimeline(t *testing.T) {
 
 	defer conn.Close()
 
-	router := setupRouter(conn, rdb)
+	router := test.SetupRouter(conn, rdb)
 
 	// Se crea un user para realizar el test de tweetear
 	userPayload := map[string]interface{}{
@@ -175,7 +162,7 @@ func TestGetTimeline(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.message, response.Data)
 			} else {
-				var errorResponse ErrorResponse
+				var errorResponse test.ErrorResponse
 				err := json.Unmarshal(w.Body.Bytes(), &errorResponse)
 				assert.NoError(t, err, "Error deserializando el cuerpo de la respuesta con error")
 				assert.Equal(t, tc.expected, errorResponse.Code)
