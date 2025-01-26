@@ -134,6 +134,15 @@ func TestPostAndGetFollows(t *testing.T) {
 			}
 		})
 	}
+
+	w = makeFollowRequest(t, "GET", "/users_follow/1/follows/followers", nil, router)
+	assert.Equal(t, int64(http.StatusOK), int64(w.Code), "Expected status OK for GET request")
+
+	var followResponse FollowsResponse
+
+	err = json.Unmarshal(w.Body.Bytes(), &followResponse)
+	assert.NoError(t, err, "Error deserializando la respuesta GET")
+	assert.True(t, len(followResponse.Data.Follows) > 0, "Expected at least one follower")
 }
 
 func setupFollowRouter(db *sql.DB, rdb *redis.Client) *gin.Engine {
