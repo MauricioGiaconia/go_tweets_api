@@ -2,13 +2,16 @@ package functional
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/MauricioGiaconia/uala_backend_challenge/internal/routes"
 	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/factory"
+	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,6 +19,16 @@ import (
 type CreateTweetRequest struct {
 	Content string `json:"content"`
 	UserID  int64  `json:"authorId"`
+}
+
+type CreateTweetResponse struct {
+	Code int    `json:"code"`
+	Data string `json:"data"`
+}
+
+type ErrorTweetResponse struct {
+	Code  int    `json:"code"`
+	Error string `json:"error"`
 }
 
 func TestTweetCreation(t *testing.T) {
@@ -33,7 +46,7 @@ func TestTweetCreation(t *testing.T) {
 
 	defer conn.Close()
 
-	router := setupRouter(conn, rdb)
+	router := setupTweetRouter(conn, rdb)
 
 	// Se crea un user para realizar el test de tweetear
 	userPayload := map[string]interface{}{
@@ -75,14 +88,14 @@ func TestTweetCreation(t *testing.T) {
 
 			assert.Equal(t, tc.expected, w.Code)
 
-			var response SuccessResponse
+			var response CreateTweetResponse
 
 			if w.Code == http.StatusCreated {
 				err := json.Unmarshal(w.Body.Bytes(), &response)
 				assert.NoError(t, err)
 				assert.Equal(t, tc.message, response.Data)
 			} else {
-				var errorResponse ErrorResponse
+				var errorResponse ErrorTweetResponse
 				err := json.Unmarshal(w.Body.Bytes(), &errorResponse)
 				assert.NoError(t, err, "Error deserializando el cuerpo de la respuesta con error")
 				assert.Equal(t, tc.expected, errorResponse.Code)
@@ -107,7 +120,7 @@ func TestGetTimeline(t *testing.T) {
 
 	defer conn.Close()
 
-	router := setupRouter(conn, rdb)
+	router := setupTweetRouter(conn, rdb)
 
 	// Se crea un user para realizar el test de tweetear
 	userPayload := map[string]interface{}{
@@ -149,14 +162,14 @@ func TestGetTimeline(t *testing.T) {
 
 			assert.Equal(t, tc.expected, w.Code)
 
-			var response SuccessResponse
+			var response CreateTweetResponse
 
 			if w.Code == http.StatusCreated {
 				err := json.Unmarshal(w.Body.Bytes(), &response)
 				assert.NoError(t, err)
 				assert.Equal(t, tc.message, response.Data)
 			} else {
-				var errorResponse ErrorResponse
+				var errorResponse ErrorTweetResponse
 				err := json.Unmarshal(w.Body.Bytes(), &errorResponse)
 				assert.NoError(t, err, "Error deserializando el cuerpo de la respuesta con error")
 				assert.Equal(t, tc.expected, errorResponse.Code)
@@ -171,4 +184,10 @@ func getMockRedis() *redis.Client {
 		Addr: "localhost:6379",
 	})
 	return client
+}
+
+func setupTweetRouter(db *sql.DB, rdb *redis.Client) *gin.Engine {
+	router := gin.Default()
+	routes.SetupRoutes(router, db, rdb)
+	return router
 }
