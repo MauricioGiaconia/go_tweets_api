@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/factory"
-	"github.com/MauricioGiaconia/uala_backend_challenge/tests/go/test"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,11 +17,6 @@ type CreateUserRequest struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
-}
-
-type CreateUserResponse struct {
-	Code int   `json:"code"`
-	Data int64 `json:"data"`
 }
 
 func TestUserCreation(t *testing.T) {
@@ -39,7 +33,7 @@ func TestUserCreation(t *testing.T) {
 
 	defer conn.Close()
 
-	router := test.SetupRouter(conn, &redis.Client{})
+	router := setupRouter(conn, &redis.Client{})
 
 	// Se crea un user para realizar el test de tweetear
 	userPayload := map[string]interface{}{
@@ -84,14 +78,14 @@ func TestUserCreation(t *testing.T) {
 
 			assert.Equal(t, tc.expected, w.Code)
 
-			var response CreateUserResponse
+			var response SuccessResponse
 
 			if w.Code == http.StatusCreated {
 				err := json.Unmarshal(w.Body.Bytes(), &response)
 				assert.NoError(t, err)
 				assert.Equal(t, tc.data, response.Data)
 			} else {
-				var errorResponse test.ErrorResponse
+				var errorResponse ErrorResponse
 				err := json.Unmarshal(w.Body.Bytes(), &errorResponse)
 				assert.NoError(t, err, "Error deserializando el cuerpo de la respuesta con error")
 				assert.Equal(t, tc.expected, errorResponse.Code)

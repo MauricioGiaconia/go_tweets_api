@@ -1,4 +1,4 @@
-package test
+package functional
 
 import (
 	"database/sql"
@@ -8,13 +8,18 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+func setupRouter(db *sql.DB, rdb *redis.Client) *gin.Engine {
+	router := gin.Default()
+	routes.SetupRoutes(router, db, rdb)
+	return router
+}
+
 type ErrorResponse struct {
 	Code  int    `json:"code"`
 	Error string `json:"error"`
 }
 
-func SetupRouter(db *sql.DB, rdb *redis.Client) *gin.Engine {
-	router := gin.Default()
-	routes.SetupRoutes(router, db, rdb)
-	return router
+type SuccessResponse struct {
+	Code int   `json:"code"`
+	Data int64 `json:"data"`
 }
