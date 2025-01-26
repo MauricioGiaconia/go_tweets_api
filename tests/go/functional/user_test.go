@@ -46,24 +46,12 @@ func TestUserCreation(t *testing.T) {
 
 	defer conn.Close()
 
-	router := setupUserRouter(conn, &redis.Client{})
-
-	// Se crea un user para realizar el test de tweetear
-	userPayload := map[string]interface{}{
-		"name":     "Mauricio Giaconia",
-		"email":    "maurigiaconia@hotmail.com",
-		"password": "1223",
+	_, err = conn.Exec("DELETE FROM users")
+	if err != nil {
+		t.Fatalf("failed to clean DB: %v", err)
 	}
 
-	userRequestBody, _ := json.Marshal(userPayload)
-	req, _ := http.NewRequest("POST", "/users/create", bytes.NewBuffer(userRequestBody))
-
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusCreated, w.Code)
+	router := setupUserRouter(conn, &redis.Client{})
 
 	// []struct con el lsitado de pruebas a realizar
 	requests := []struct {
@@ -72,17 +60,24 @@ func TestUserCreation(t *testing.T) {
 		data     int    // Mensaje esperado en la respuesta
 		errors   string //Mensaje esperado en caso de error
 	}{
-		{CreateUserRequest{Name: "Mauricio Giaconia", Email: "maurigiaconia@hotmail.com", Password: "1234"}, int(http.StatusCreated), 1, ""},
+		{CreateUserRequest{Name: "Mauricio Giaconia", Email: "mauridwadwagiaconia@hotmail.com", Password: "1234"}, int(http.StatusCreated), 1, ""},
 		{CreateUserRequest{Name: "User Uala", Email: "user@uala.com.ar", Password: "1234"}, int(http.StatusCreated), 1, ""},
 		{CreateUserRequest{Name: "Uala Test", Email: "uala@test.com.ar", Password: "1234"}, int(http.StatusCreated), 1, ""},
-		{CreateUserRequest{Name: "Uala Test", Email: "user@uala.com.a", Password: "1234"}, int(http.StatusInternalServerError), 0, "Error to create user"},
+		{CreateUserRequest{Name: "Uala Test", Email: "user@uala.com.ar", Password: "1234"}, int(http.StatusInternalServerError), 0, "Error to create user"},
 	}
 
 	for i, tc := range requests {
 		t.Run(fmt.Sprintf("Request %d", i+1), func(t *testing.T) {
 
-			requestBody, _ := json.Marshal(tc.payload)
+			requestBody, _ := json.Marshal(map[string]interface{}{
+				"name":     "Mauricio Giaconia",
+				"email":    "maurigiaconia@hotmail.com",
+				"password": "1223",
+			})
 
+			fmt.Println("VOY CON ESTE BODY")
+			fmt.Println(tc.payload)
+			fmt.Println("VOY CON ESTE BODY")
 			req, _ := http.NewRequest("POST", "/users/create", bytes.NewBuffer(requestBody))
 			req.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()

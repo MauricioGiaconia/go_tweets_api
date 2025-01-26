@@ -14,6 +14,7 @@ func CreateUser(db *sql.DB, user *models.User) (int64, error) {
 	var id int64
 	err := db.QueryRow(query, user.Name, user.Email, user.Password).Scan(&id)
 	if err != nil {
+		fmt.Println("[x] Error to create user: %v %v %v %v", err, user.Name, user.Email, user.Password)
 		log.Printf("[x] Error to create user: %v", err)
 		return 0, fmt.Errorf("Error to create user")
 	}
