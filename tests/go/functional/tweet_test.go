@@ -8,10 +8,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/routes"
+	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/factory"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
@@ -40,14 +39,23 @@ type ErrorResponse struct {
 
 func TestTweetCreation(t *testing.T) {
 	// Mock database and Redis
-	db, _, err := getMockDB() // Replace with a mock DB or use sqlmock
+	db, err := factory.GetDatabase("sqlite") // Crear la conexión a SQLite en memoria
 	if err != nil {
-		t.Fatalf("failed to create mock DB: %v", err)
+		t.Fatalf("failed to create DB: %v", err)
 	}
-	rdb := getMockRedis() // Replace with a mock Redis
+	rdb := getMockRedis() // Puedes simular el comportamiento de Redis si es necesario
+
+	// Conectar la base de datos
+	conn, err := db.Connect()
+	if err != nil {
+		t.Fatalf("failed to connect DB: %v", err)
+	}
+
+	// Limpiar la base de datos si es necesario (si ya has hecho alguna inserción, por ejemplo)
+	defer conn.Close()
 
 	// Setup router
-	router := setupRouter(db, rdb)
+	router := setupRouter(conn, rdb)
 
 	// Primero, crea un usuario con el formato correcto
 	userPayload := map[string]interface{}{
@@ -62,8 +70,13 @@ func TestTweetCreation(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
+	// Ejecutar la solicitud de creación del usuario
+	router.ServeHTTP(w, req)
+
+	// Validar que la respuesta sea correcta
 	assert.Equal(t, http.StatusCreated, w.Code)
 
+	// Ahora probamos las solicitudes de creación de tweet
 	requests := []struct {
 		payload  CreateTweetRequest
 		expected int    // Código de estado esperado
@@ -77,8 +90,6 @@ func TestTweetCreation(t *testing.T) {
 		t.Run(fmt.Sprintf("Request %d", i+1), func(t *testing.T) {
 			// Crea el cuerpo de la solicitud
 			requestBody, _ := json.Marshal(tc.payload)
-
-			fmt.Println(tc.payload)
 
 			// Crea la solicitud HTTP
 			req, _ := http.NewRequest("POST", "/tweets/create", bytes.NewBuffer(requestBody))
@@ -107,41 +118,10 @@ func TestTweetCreation(t *testing.T) {
 			}
 		})
 	}
-
-}
-
-func getMockDB() (*sql.DB, sqlmock.Sqlmock, error) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// currentTime := time.Now().Format("2006-01-02 15:04:05")
-
-	mock.ExpectQuery("INSERT INTO users").
-		WithArgs("Mauricio Giaconia", "maurigiaconia@hotmail.com", "1223").
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-
-	mock.ExpectExec("INSERT INTO users").
-		WithArgs("Mauricio Giaconia", "maurigiaconia@hotmail.com").
-		WillReturnResult(sqlmock.NewResult(1, 1))
-
-	mock.ExpectQuery("SELECT id, name, email, created_at FROM users WHERE id = \\$1").
-		WithArgs(1). // El ID que estamos buscando
-		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "email", "created_at"}).
-			AddRow(1, "Mauricio Giaconia", "maurigiaconia@hotmail.com", time.Now())) // Datos del usuario con ID 1
-
-	mock.ExpectBegin()
-	mock.ExpectExec("INSERT INTO tweets").
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg()).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectCommit()
-
-	return db, mock, nil
 }
 
 func getMockRedis() *redis.Client {
-	// Puedes simular el comportamiento de Redis si es necesario
+	// Simulación básica de Redis
 	client := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379", // Dirección de Redis para pruebas
 	})
