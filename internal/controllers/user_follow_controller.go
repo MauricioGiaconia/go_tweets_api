@@ -28,9 +28,8 @@ func (ufc *UserFollowController) FollowUserHandler(c *gin.Context) {
 
 	// Decodificamos el cuerpo de la solicitud JSON al struct User
 	if err := c.ShouldBindJSON(&follow); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("[x] Error decoding body: %v", err),
-		})
+		badResponse := utils.ResponseToApi(http.StatusBadRequest, "Error decoding body", false, 0, 0, 0)
+		c.JSON(http.StatusBadRequest, badResponse)
 		return
 	}
 
@@ -41,25 +40,37 @@ func (ufc *UserFollowController) FollowUserHandler(c *gin.Context) {
 		return
 	}
 
+	if follow.FollowedID <= 0 || follow.FollowedID <= 0 {
+		badResponse := utils.ResponseToApi(http.StatusBadRequest, "Invalid follower or followed ID", false, 0, 0, 0)
+		c.JSON(http.StatusBadRequest, badResponse)
+		return
+	}
+
 	// Llamamos al servicio para crear el usuario
 	followResponse, err := ufc.UserFollowService.FollowUser(&follow)
+
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("[x] Error to follow: %v", err),
-		})
+		if err.Error() == "Nonexistent followed ID user" || err.Error() == "Nonexistent follower ID user" {
+			badResponse := utils.ResponseToApi(http.StatusBadRequest, err.Error(), false, 0, 0, 0)
+			c.JSON(http.StatusBadRequest, badResponse)
+			return
+		}
+
+		serverErrorResponse := utils.ResponseToApi(http.StatusInternalServerError, err.Error(), false, 0, 0, 0)
+		c.JSON(http.StatusInternalServerError, serverErrorResponse)
 		return
 	}
 
 	msgResponse := "Followed"
-
+	responseCode := http.StatusCreated
 	if !followResponse {
+		responseCode = http.StatusBadRequest
 		msgResponse = "Cannot follow the user"
 	}
 
-	// Respondemos con el ID del usuario creado
-	c.JSON(http.StatusCreated, gin.H{
-		"msg": msgResponse,
-	})
+	finalResponse := utils.ResponseToApi(int64(responseCode), msgResponse, false, 0, 0, 0)
+
+	c.JSON(responseCode, finalResponse)
 }
 
 // GetFollowersHandler maneja la solicitud de obtener un usuario por su ID.

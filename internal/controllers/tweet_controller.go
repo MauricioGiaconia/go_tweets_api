@@ -31,8 +31,22 @@ func (tc *TweetController) CreateTweetHandler(c *gin.Context) {
 		return
 	}
 
+	if tweet.UserID <= 0 {
+		badResponse := utils.ResponseToApi(http.StatusBadRequest, "Invalid user ID", false, 0, 0, 0)
+		c.JSON(http.StatusBadRequest, badResponse)
+		return
+	}
+
 	tweetPosted, err := tc.TweetService.PostTweet(&tweet)
+
 	if err != nil {
+
+		if err.Error() == "Nonexistent user" {
+			badResponse := utils.ResponseToApi(http.StatusBadRequest, err.Error(), false, 0, 0, 0)
+			c.JSON(http.StatusBadRequest, badResponse)
+			return
+		}
+
 		errorResponse := utils.ResponseToApi(http.StatusInternalServerError, "[X] Error posting tweet: "+err.Error(), false, 0, 0, 0)
 		c.JSON(http.StatusBadRequest, errorResponse)
 		return
@@ -53,6 +67,12 @@ func (tc *TweetController) GetTimelineHandler(c *gin.Context) {
 	idStr := c.Param("follower_id")
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
+
+	if err != nil || id <= 0 {
+		badResponse := utils.ResponseToApi(http.StatusBadRequest, "Invalid follower ID", false, 0, 0, 0)
+		c.JSON(http.StatusBadRequest, badResponse)
+		return
+	}
 
 	limitStr := c.Query("limit")
 	offsetStr := c.Query("offset")
@@ -84,12 +104,6 @@ func (tc *TweetController) GetTimelineHandler(c *gin.Context) {
 		}
 	} else {
 		offset = defaultOffset
-	}
-
-	if err != nil {
-		badResponse := utils.ResponseToApi(http.StatusBadRequest, "Invalid follower ID", false, 0, 0, 0)
-		c.JSON(http.StatusBadRequest, badResponse)
-		return
 	}
 
 	timeline, err := tc.TweetService.GetUserTimeline(&id, &limit, &offset)

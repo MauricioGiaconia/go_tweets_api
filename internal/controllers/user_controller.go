@@ -52,7 +52,7 @@ func (uc *UserController) GetUserByIdHandler(c *gin.Context) {
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
 
-	if err != nil {
+	if err != nil || id <= 0 {
 		badResponse := utils.ResponseToApi(http.StatusBadRequest, "Invalid user ID", false, 0, 0, 0)
 		c.JSON(http.StatusBadRequest, badResponse)
 		return
