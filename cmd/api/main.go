@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/routes"
 	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/db"
@@ -13,9 +14,15 @@ import (
 
 func main() {
 
-	//Obtengo el tipo de db a utilizar por linea de comandos, usando la flag -db
+	//Obtengo el tipo de db y port a utilizar por linea de comandos, usando la flag -db y -port
 	dbType := flag.String("db", "sqlite", "Tipo de base de datos a usar (postgres, sqlite)")
+	port := flag.String("port", "8080", "Puerto a utilizar") //Por defecto se usa el puerto 8080
 	flag.Parse()
+
+	portNum, err := strconv.Atoi(*port)
+	if err != nil || portNum < 1 || portNum > 65535 {
+		log.Fatalf("[x] Invalid port")
+	}
 
 	if *dbType != "sqlite" && *dbType != "postgres" {
 		log.Fatalf("[x] Invalid dbType")
@@ -48,5 +55,8 @@ func main() {
 
 	defer db.CloseDatabase(dbConn)
 
-	router.Run(":8080")
+	address := fmt.Sprintf(":%s", *port)
+	if err := router.Run(address); err != nil {
+		log.Fatalf("[x] Failed to start server: %v", err)
+	}
 }
