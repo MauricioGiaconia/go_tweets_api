@@ -38,26 +38,23 @@ type ErrorResponse struct {
 }
 
 func TestTweetCreation(t *testing.T) {
-	// Mock database and Redis
-	db, err := factory.GetDatabase("sqlite") // Crear la conexión a SQLite en memoria
+	// Se reutiliza sqlite en memoria para los tests
+	db, err := factory.GetDatabase("sqlite")
 	if err != nil {
 		t.Fatalf("failed to create DB: %v", err)
 	}
-	rdb := getMockRedis() // Puedes simular el comportamiento de Redis si es necesario
+	rdb := getMockRedis()
 
-	// Conectar la base de datos
 	conn, err := db.Connect()
 	if err != nil {
 		t.Fatalf("failed to connect DB: %v", err)
 	}
 
-	// Limpiar la base de datos si es necesario (si ya has hecho alguna inserción, por ejemplo)
 	defer conn.Close()
 
-	// Setup router
 	router := setupRouter(conn, rdb)
 
-	// Primero, crea un usuario con el formato correcto
+	// Se crea un user para realizar el test de tweetear
 	userPayload := map[string]interface{}{
 		"name":     "Mauricio Giaconia",
 		"email":    "maurigiaconia@hotmail.com",
@@ -70,13 +67,11 @@ func TestTweetCreation(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
-	// Ejecutar la solicitud de creación del usuario
 	router.ServeHTTP(w, req)
 
-	// Validar que la respuesta sea correcta
 	assert.Equal(t, http.StatusCreated, w.Code)
 
-	// Ahora probamos las solicitudes de creación de tweet
+	// []struct con el lsitado de pruebas a realizar
 	requests := []struct {
 		payload  CreateTweetRequest
 		expected int    // Código de estado esperado
@@ -88,21 +83,17 @@ func TestTweetCreation(t *testing.T) {
 	}
 	for i, tc := range requests {
 		t.Run(fmt.Sprintf("Request %d", i+1), func(t *testing.T) {
-			// Crea el cuerpo de la solicitud
+
 			requestBody, _ := json.Marshal(tc.payload)
 
-			// Crea la solicitud HTTP
 			req, _ := http.NewRequest("POST", "/tweets/create", bytes.NewBuffer(requestBody))
 			req.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()
 
-			// Ejecuta la solicitud
 			router.ServeHTTP(w, req)
 
-			// Valida el código de estado
 			assert.Equal(t, tc.expected, w.Code)
 
-			// Valida el mensaje de la respuesta si es aplicable
 			var response CreateTweetResponse
 
 			if w.Code == http.StatusCreated {
@@ -121,9 +112,8 @@ func TestTweetCreation(t *testing.T) {
 }
 
 func getMockRedis() *redis.Client {
-	// Simulación básica de Redis
 	client := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379", // Dirección de Redis para pruebas
+		Addr: "localhost:6379",
 	})
 	return client
 }
