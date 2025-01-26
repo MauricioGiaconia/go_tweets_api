@@ -143,6 +143,13 @@ func TestPostAndGetFollows(t *testing.T) {
 	err = json.Unmarshal(w.Body.Bytes(), &followResponse)
 	assert.NoError(t, err, "Error deserializando la respuesta GET")
 	assert.True(t, len(followResponse.Data.Follows) > 0, "Expected at least one follower")
+
+	w = makeFollowRequest(t, "GET", "/users_follow/1/follows/following", nil, router)
+	assert.Equal(t, int64(http.StatusOK), int64(w.Code), "Expected status OK for GET request")
+
+	err = json.Unmarshal(w.Body.Bytes(), &followResponse)
+	assert.NoError(t, err, "Error deserializando la respuesta GET")
+	assert.True(t, len(followResponse.Data.Follows) > 0, "Expected at least one following")
 }
 
 func setupFollowRouter(db *sql.DB, rdb *redis.Client) *gin.Engine {
@@ -165,8 +172,6 @@ func getMockFollowRedis() *redis.Client {
 func makeFollowRequest(t *testing.T, method, url string, body interface{}, router *gin.Engine) *httptest.ResponseRecorder {
 	var requestBody []byte
 
-	fmt.Println("LLEGO ACA CON ESTE BODY?", body)
-
 	if body != nil {
 		var err error
 		requestBody, err = json.Marshal(body)
@@ -175,7 +180,6 @@ func makeFollowRequest(t *testing.T, method, url string, body interface{}, route
 		}
 	}
 
-	fmt.Println("Serialized request body:", string(requestBody))
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		t.Fatalf("Error creating request: %v", err)
