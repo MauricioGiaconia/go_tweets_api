@@ -37,6 +37,7 @@ func main() {
 	if err != nil {
 		fmt.Println("API working without redis: %v", err.Error())
 	} else {
+		fmt.Println("API working with redis!")
 		defer redisClient.Close()
 	}
 
