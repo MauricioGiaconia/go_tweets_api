@@ -11,6 +11,7 @@ import (
 
 	"github.com/MauricioGiaconia/uala_backend_challenge/internal/routes"
 	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/factory"
+	"github.com/MauricioGiaconia/uala_backend_challenge/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
@@ -24,11 +25,6 @@ type CreateTweetRequest struct {
 type CreateTweetResponse struct {
 	Code int    `json:"code"`
 	Data string `json:"data"`
-}
-
-type ErrorTweetResponse struct {
-	Code  int    `json:"code"`
-	Error string `json:"error"`
 }
 
 type TimelineTweet struct {
@@ -97,7 +93,7 @@ func TestTweetCreation(t *testing.T) {
 
 			router.ServeHTTP(w, req)
 
-			assert.Equal(t, tc.expected, w.Code)
+			assert.Equal(t, int64(tc.expected), int64(w.Code))
 
 			var response CreateTweetResponse
 
@@ -106,10 +102,10 @@ func TestTweetCreation(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.message, response.Data)
 			} else {
-				var errorResponse ErrorTweetResponse
+				var errorResponse utils.ErrorResponse
 				err := json.Unmarshal(w.Body.Bytes(), &errorResponse)
 				assert.NoError(t, err, "Error deserializando el cuerpo de la respuesta con error")
-				assert.Equal(t, tc.expected, errorResponse.Code)
+				assert.Equal(t, int64(tc.expected), int64(errorResponse.Code))
 				assert.Contains(t, errorResponse.Error, tc.message)
 			}
 		})
@@ -141,8 +137,8 @@ func TestGetTimeline(t *testing.T) {
 	}
 
 	w := makeRequest(t, "POST", "/users/create", userPayload, router)
-	assert.Equal(t, http.StatusCreated, w.Code)
-	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Equal(t, int64(http.StatusCreated), int64(w.Code))
+	assert.Equal(t, int64(http.StatusCreated), int64(w.Code))
 
 	// Crear el segundo usuario
 	otherUserPayload := map[string]interface{}{
@@ -151,7 +147,7 @@ func TestGetTimeline(t *testing.T) {
 		"password": "4567",
 	}
 	w = makeRequest(t, "POST", "/users/create", otherUserPayload, router)
-	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Equal(t, int64(http.StatusCreated), int64(w.Code))
 
 	// El usuario 1 sigue al usuario 2
 	followPayload := map[string]interface{}{
@@ -159,18 +155,18 @@ func TestGetTimeline(t *testing.T) {
 		"followedId": 1,
 	}
 	w = makeRequest(t, "POST", "/users_follow/create", followPayload, router)
-	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Equal(t, int64(http.StatusCreated), int64(w.Code))
 
 	tweetPayload := CreateTweetRequest{Content: "Tweet desde test 1", UserID: 1}
 	w = makeRequest(t, "POST", "/tweets/create", tweetPayload, router)
-	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Equal(t, int64(http.StatusCreated), int64(w.Code))
 
 	tweetPayload = CreateTweetRequest{Content: "Tweet Uala desde test 2", UserID: 1}
 	w = makeRequest(t, "POST", "/tweets/create", tweetPayload, router)
-	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Equal(t, int64(http.StatusCreated), int64(w.Code))
 
 	w = makeRequest(t, "GET", "/tweets/2/timeline", nil, router)
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, int64(http.StatusOK), int64(w.Code))
 
 	// Asegurarse de que los tweets de Mauricio Giaconia aparecen en la timeline de Juan Perez
 	var response TimelineResponse
@@ -184,10 +180,10 @@ func TestGetTimeline(t *testing.T) {
 	assert.Equal(t, response.Limit, 25)
 	assert.Equal(t, response.Offset, 0)
 
-	var errorResponse ErrorTweetResponse
+	var errorResponse utils.ErrorResponse
 	// Obtencion del timeline de un usuario inexistente
 	w = makeRequest(t, "GET", "/tweets/999/timeline", nil, router)
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Equal(t, int64(http.StatusBadRequest), int64(w.Code))
 
 	err = json.Unmarshal(w.Body.Bytes(), &errorResponse)
 

@@ -115,10 +115,10 @@ go mod tidy
 
 Ejecución de la API.
 
-**Nota**: Si no envías la variable de entorno **--db**, la API usará SQLite por defecto. Si deseas usar PostgreSQL, agrega --db=postgres al comando de ejecución.
+**Nota**: Si no envías la variable de entorno **--db**, la API usará SQLite por defecto. Si deseas usar PostgreSQL, agrega --db=postgres al comando de ejecución. Tambien, si no envias la variable **--port**, se tomará el valor 8080 por defecto.
 
 ```bash
-go run cmd/api/main.go --db=sqlite
+go run cmd/api/main.go --db=sqlite --port=8080
 ```
 
 Deberías ver el siguiente mensaje indicando que la API está en funcionamiento:
