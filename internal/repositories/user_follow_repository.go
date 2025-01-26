@@ -12,12 +12,19 @@ import (
 )
 
 func FollowUser(db *sql.DB, userFollow *models.UserFollow) (bool, error) {
+	tx, err := db.Begin()
 	query := `INSERT INTO follows (follower_id, followed_id) VALUES ($1, $2)`
 
-	_, err := db.Exec(query, userFollow.FollowerID, userFollow.FollowedID)
+	_, err = tx.Exec(query, userFollow.FollowerID, userFollow.FollowedID)
 	if err != nil {
+		tx.Rollback()
 		fmt.Println("[x] Error to create follow: %v", err)
 		return false, fmt.Errorf("[x] Error to create follow: %v", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return false, fmt.Errorf("Error committing transaction: %v", err)
 	}
 
 	return true, nil

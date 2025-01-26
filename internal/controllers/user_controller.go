@@ -32,7 +32,7 @@ func (uc *UserController) CreateUserHandler(c *gin.Context) {
 	}
 
 	// Llamamos al servicio para crear el usuario
-	userID, err := uc.UserService.CreateUser(&user)
+	userID, err := uc.UserService.CreateUser(user)
 	if err != nil {
 		serverErrorResponse := utils.ResponseToApi(http.StatusInternalServerError, err.Error(), false, 0, 0, 0)
 		c.JSON(http.StatusInternalServerError, serverErrorResponse)

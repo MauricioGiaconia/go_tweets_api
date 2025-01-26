@@ -31,6 +31,23 @@ type ErrorTweetResponse struct {
 	Error string `json:"error"`
 }
 
+type TimelineTweet struct {
+	TweetID    int    `json:"tweetId"`
+	AuthorID   int    `json:"authorId"`
+	AuthorName string `json:"authorName"`
+	Content    string `json:"content"`
+	CreatedAt  string `json:"createdAt"` // O usa `time.Time` si quieres manejar fechas como objetos
+}
+
+type TimelineResponse struct {
+	Code   int             `json:"code"`
+	Data   []TimelineTweet `json:"data"`
+	Count  int             `json:"count"`
+	Limit  int             `json:"limit"`
+	Offset int             `json:"offset"`
+	Next   string          `json:"next"`
+}
+
 func TestTweetCreation(t *testing.T) {
 	// Se reutiliza sqlite en memoria para los tests
 	db, err := factory.GetDatabase("sqlite")
@@ -142,7 +159,7 @@ func TestGetTimeline(t *testing.T) {
 		"followedId": 1,
 	}
 	w = makeRequest(t, "POST", "/users_follow/create", followPayload, router)
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusCreated, w.Code)
 
 	tweetPayload := CreateTweetRequest{Content: "Tweet desde test 1", UserID: 1}
 	w = makeRequest(t, "POST", "/tweets/create", tweetPayload, router)
@@ -155,18 +172,37 @@ func TestGetTimeline(t *testing.T) {
 	w = makeRequest(t, "GET", "/tweets/2/timeline", nil, router)
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	// Asegurarse de que los tweets de Juan Perez aparecen en la timeline de Mauricio Giaconia
-	var response []CreateTweetResponse
+	// Asegurarse de que los tweets de Mauricio Giaconia aparecen en la timeline de Juan Perez
+	var response TimelineResponse
 	err = json.Unmarshal(w.Body.Bytes(), &response)
+
 	assert.NoError(t, err)
-	assert.Len(t, response, 2)
-	assert.Contains(t, response[0].Data, "Tweet desde test 1")
-	assert.Contains(t, response[1].Data, "Tweet Uala desde test 2")
+	assert.Len(t, response.Data, 2)
+	assert.Contains(t, response.Data[0].Content, "Tweet desde test 1")
+	assert.Contains(t, response.Data[1].Content, "Tweet Uala desde test 2")
+	assert.Equal(t, response.Count, 2)
+	assert.Equal(t, response.Limit, 25)
+	assert.Equal(t, response.Offset, 0)
+
+	// Obtencion del timeline de un usuario inexistente
+	w = makeRequest(t, "GET", "/tweets/999/timeline", nil, router)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	err = json.Unmarshal(w.Body.Bytes(), &response)
+
+	assert.NoError(t, err)
+	assert.Len(t, response.Data, 0)
+	assert.Equal(t, response.Count, 0)
+	assert.Equal(t, response.Limit, 25)
+	assert.Equal(t, response.Offset, 0)
 }
 
 func getMockRedis() *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+		Protocol: 2,
 	})
 	return client
 }

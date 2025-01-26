@@ -9,14 +9,20 @@ import (
 )
 
 // CreateUser crea un nuevo usuario en la base de datos.
-func CreateUser(db *sql.DB, user *models.User) (int64, error) {
+func CreateUser(db *sql.DB, user models.User) (int64, error) {
+	tx, err := db.Begin()
 	query := `INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id`
 	var id int64
-	err := db.QueryRow(query, user.Name, user.Email, user.Password).Scan(&id)
+	err = tx.QueryRow(query, user.Name, user.Email, user.Password).Scan(&id)
 	if err != nil {
-		fmt.Println("[x] Error to create user: %v %v %v %v", err, user.Name, user.Email, user.Password)
+		tx.Rollback()
 		log.Printf("[x] Error to create user: %v", err)
-		return 0, fmt.Errorf("Error to create user")
+		return 0, fmt.Errorf(err.Error())
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, fmt.Errorf("Error committing CreateUser transaction: %v", err)
 	}
 
 	return id, nil

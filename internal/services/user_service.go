@@ -16,7 +16,7 @@ func NewUserService(db *sql.DB) *UserService {
 	return &UserService{DB: db}
 }
 
-func (us *UserService) CreateUser(user *models.User) (int64, error) {
+func (us *UserService) CreateUser(user models.User) (int64, error) {
 	userID, err := repositories.CreateUser(us.DB, user)
 	if err != nil {
 		return 0, fmt.Errorf(err.Error())

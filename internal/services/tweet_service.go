@@ -45,26 +45,32 @@ func (ts *TweetService) GetUserTimeline(followerId *int64, limit *int64, offset 
 		return nil, fmt.Errorf("Error getting timeline: %v", err)
 	}
 
-	if ts.RDB != nil {
-		isFullPage := int64(len(timeline)) == *limit
+	//Se guarda unicamente en redis si hay informacion
+	if int64(len(timeline)) > 0 {
+		if ts.RDB != nil {
+			isFullPage := int64(len(timeline)) == *limit
 
-		timelineCache := models.TimelineCache{
-			Tweets:     timeline,
-			IsFullPage: isFullPage,
+			timelineCache := models.TimelineCache{
+				Tweets:     timeline,
+				IsFullPage: isFullPage,
+			}
+
+			ttl := 30 * time.Minute
+
+			if !isFullPage {
+				//En caso que la pagina NO este completa, se mantiene un time to live menor
+				ttl = 10 * time.Minute
+			}
+
+			err = repositories.SaveTweetsToCache(ts.RDB, cacheKey, &timelineCache, ttl)
+			if err != nil {
+				fmt.Println("Error saving timeline to Redis: %v", err) // Si no se pudo guardar la data en cache, retorno de todas formas la informacion obtenida de la db sql
+			}
 		}
-
-		ttl := 30 * time.Minute
-
-		if !isFullPage {
-			//En caso que la pagina NO este completa, se mantiene un time to live menor
-			ttl = 10 * time.Minute
-		}
-
-		err = repositories.SaveTweetsToCache(ts.RDB, cacheKey, &timelineCache, ttl)
-		if err != nil {
-			fmt.Println("Error saving timeline to Redis: %v", err) // Si no se pudo guardar la data en cache, retorno de todas formas la informacion obtenida de la db sql
-		}
+	} else {
+		timeline = []models.Tweet{}
 	}
+
 	return timeline, nil
 }
 

@@ -25,7 +25,7 @@ func PostTweet(db *sql.DB, tweet *models.Tweet) (bool, error) {
 
 	err = tx.Commit()
 	if err != nil {
-		return false, fmt.Errorf("Error committing transaction: %v", err)
+		return false, fmt.Errorf("Error committing PostTweet transaction: %v", err)
 	}
 
 	return true, nil
