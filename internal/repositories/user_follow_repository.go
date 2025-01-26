@@ -24,7 +24,7 @@ func FollowUser(db *sql.DB, userFollow *models.UserFollow) (bool, error) {
 
 	err = tx.Commit()
 	if err != nil {
-		return false, fmt.Errorf("Error committing transaction: %v", err)
+		return false, fmt.Errorf("Error committing FollowUser transaction: %v", err)
 	}
 
 	return true, nil
