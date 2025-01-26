@@ -41,20 +41,20 @@ func (tc *TweetController) CreateTweetHandler(c *gin.Context) {
 
 	if err != nil {
 
-		if err.Error() == "Nonexistent user" {
+		if err.Error() == "Nonexistent user" || err.Error() == "The content of the tweet must not exceed 280 characters" {
 			badResponse := utils.ResponseToApi(http.StatusBadRequest, err.Error(), false, 0, 0, 0)
 			c.JSON(http.StatusBadRequest, badResponse)
 			return
 		}
 
 		errorResponse := utils.ResponseToApi(http.StatusInternalServerError, "[X] Error posting tweet: "+err.Error(), false, 0, 0, 0)
-		c.JSON(http.StatusBadRequest, errorResponse)
+		c.JSON(http.StatusInternalServerError, errorResponse)
 		return
 	}
 
 	if !tweetPosted {
 		errorResponse := utils.ResponseToApi(http.StatusInternalServerError, "[X] Could not post the tweet", false, 0, 0, 0)
-		c.JSON(http.StatusBadRequest, errorResponse)
+		c.JSON(http.StatusInternalServerError, errorResponse)
 		return
 	}
 

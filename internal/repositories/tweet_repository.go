@@ -20,7 +20,7 @@ func PostTweet(db *sql.DB, tweet *models.Tweet) (bool, error) {
 	if err != nil {
 		tx.Rollback()
 		fmt.Println("[x] Error to create Tweet: %v", err)
-		return false, fmt.Errorf("[x] Error to create Tweet: %v", err)
+		return false, fmt.Errorf(err.Error())
 	}
 
 	err = tx.Commit()

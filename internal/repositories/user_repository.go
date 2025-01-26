@@ -26,6 +26,11 @@ func GetUserById(db *sql.DB, id int64) (models.User, error) {
 	var user models.User
 	err := db.QueryRow(`SELECT id, name, email, created_at FROM users WHERE id = $1`, id).
 		Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt)
+
+	fmt.Println("SOY ESTE USEEEEEEEEER")
+	fmt.Println(user)
+	fmt.Println(id)
+	fmt.Println("SOY ESTE USEEEEEEEEER")
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return models.User{}, fmt.Errorf("user not found")
