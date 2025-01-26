@@ -26,7 +26,7 @@ func (uc *UserController) CreateUserHandler(c *gin.Context) {
 
 	// Decodificamos el cuerpo de la solicitud JSON al struct User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		badResponse := utils.ResponseToApi(http.StatusBadRequest, "[x] Error decoding body: "+err.Error(), false, 0, 0, 0)
+		badResponse := utils.ResponseToApi(http.StatusBadRequest, err.Error(), false, 0, 0, 0)
 		c.JSON(http.StatusBadRequest, badResponse)
 		return
 	}
@@ -34,8 +34,8 @@ func (uc *UserController) CreateUserHandler(c *gin.Context) {
 	// Llamamos al servicio para crear el usuario
 	userID, err := uc.UserService.CreateUser(&user)
 	if err != nil {
-		badResponse := utils.ResponseToApi(http.StatusBadRequest, "[x] Error creating user: "+err.Error(), false, 0, 0, 0)
-		c.JSON(http.StatusBadRequest, badResponse)
+		serverErrorResponse := utils.ResponseToApi(http.StatusInternalServerError, err.Error(), false, 0, 0, 0)
+		c.JSON(http.StatusInternalServerError, serverErrorResponse)
 		return
 	}
 

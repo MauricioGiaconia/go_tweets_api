@@ -19,7 +19,7 @@ func NewUserService(db *sql.DB) *UserService {
 func (us *UserService) CreateUser(user *models.User) (int64, error) {
 	userID, err := repositories.CreateUser(us.DB, user)
 	if err != nil {
-		return 0, fmt.Errorf("Error creating user: %v", err)
+		return 0, fmt.Errorf(err.Error())
 	}
 	return userID, nil
 }
