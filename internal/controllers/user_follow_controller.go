@@ -39,7 +39,7 @@ func (ufc *UserFollowController) FollowUserHandler(c *gin.Context) {
 		return
 	}
 
-	if follow.FollowedID <= 0 || follow.FollowedID <= 0 {
+	if follow.FollowedID <= 0 || follow.FollowerID <= 0 {
 		badResponse := utils.ResponseToApi(http.StatusBadRequest, "Invalid follower or followed ID", false, 0, 0, 0)
 		c.JSON(http.StatusBadRequest, badResponse)
 		return
