@@ -45,3 +45,11 @@ Generación de Logs de Auditoría:
 
 - Suposición: Aunque no se implementó la generación de logs de auditoría en el proyecto, lo considero una práctica fundamental para cualquier aplicación que necesite rastrear la actividad de los usuarios y las acciones del sistema.
 - Decisión: Se implementaría una solución de logs de auditoría utilizando una base de datos NoSQL, como MongoDB, para almacenar los registros de actividades importantes. Esto proporcionaría flexibilidad para almacenar logs con una estructura más libre y escalabilidad a medida que crezca la cantidad de datos.
+
+Assumption para eliminación de tweets:
+- Suposición: Aunque no se implementó la lógica de eliminación de tweets en este desafío, si se incluyera en el futuro, se deberían manejar las actualizaciones en el cache de Redis.
+- Decisión: Para mantener la coherencia entre los tweets eliminados y el timeline cacheado, se podrían utilizar mecanismos como la invalidación de caché o actualizar las listas cacheadas de los usuarios afectados. Esta responsabilidad podría ser delegada a un consumidor encargado de actualizar el timeline en cache.
+
+Assumption para "Unfollow":
+Suposición: Aunque no se implementó la lógica de "unfollow" en este desafío, se asume que en el futuro, si los usuarios deciden dejar de seguir a alguien, el timeline debe actualizarse en consecuencia.
+Decisión: La lógica de "unfollow" podría consistir en eliminar al usuario de la lista de seguidores y actualizar el cache de Redis para eliminar los tweets de los usuarios a los que ya no se siguen. La caché del timeline de un usuario podría ser invalidada o actualizada para reflejar que ya no debe mostrar tweets de esa persona.
