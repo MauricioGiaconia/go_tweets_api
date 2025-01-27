@@ -79,7 +79,7 @@ func (ufc *UserFollowController) GetFollowersHandler(c *gin.Context) {
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
 
-	if err != nil {
+	if err != nil || id <= 0 {
 		badResponse := utils.ResponseToApi(http.StatusBadRequest, "Invalid user ID", false, 0, 0, 0)
 		c.JSON(http.StatusBadRequest, badResponse)
 		return
@@ -121,6 +121,13 @@ func (ufc *UserFollowController) GetFollowersHandler(c *gin.Context) {
 	userFollowInfo, err := ufc.UserFollowService.GetFollows(&id, &relationType, &limit, &offset)
 
 	if err != nil {
+
+		if err.Error() == "Nonexistent ID user" {
+			badResponse := utils.ResponseToApi(http.StatusBadRequest, err.Error(), false, 0, 0, 0)
+			c.JSON(http.StatusBadRequest, badResponse)
+			return
+		}
+
 		errorResponse := utils.ResponseToApi(http.StatusInternalServerError, err.Error(), false, 0, 0, 0)
 		c.JSON(http.StatusInternalServerError, errorResponse)
 		return

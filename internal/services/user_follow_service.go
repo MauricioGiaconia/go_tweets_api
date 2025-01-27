@@ -50,6 +50,12 @@ func (ufs *FollowService) GetFollows(userId *int64, relationType *string, limit 
 		return models.UserFollows{}, fmt.Errorf("Invalid follow type. Must be 'followers' or 'following'")
 	}
 
+	_, err := repositories.GetUserById(ufs.DB, *userId)
+
+	if err != nil {
+		return models.UserFollows{}, fmt.Errorf("Nonexistent ID user")
+	}
+
 	cacheKey := fmt.Sprintf("follows:%d:%d:%d:%d", *userId, *relationType, *limit, *offset)
 
 	if ufs.RDB != nil {
