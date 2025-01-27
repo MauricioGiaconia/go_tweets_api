@@ -1,0 +1,47 @@
+Assumptions y Decisiones de Diseño
+Autenticación y Autorización:
+
+La aplicación no incluye un módulo de autenticación ni autorización.
+- Suposición: Todos los usuarios que interactúan con la aplicación son válidos y se identifican únicamente por su user_id. No es necesario validar nombre, contraseña ni correo electrónico. Esto simplifica la implementación y la escalabilidad, aunque se podría agregar un módulo de autenticación en el futuro si fuera necesario.
+- Decisión: No se implementa el uso de tokens de autenticación (como Bearer token en headers) debido a la premisa de que no se requiere manejo de sesiones ni sign-in.
+Base de Datos:
+
+Motor de base de datos: 
+Se utilizó una base de datos en memoria para pruebas.
+- Suposición: Aunque la base de datos en memoria (SQLite en este caso) no refleja un entorno real en producción, se hizo para pruebas. Para una implementación en producción, se utilizaría una base de datos relacional, como PostgreSQL.
+- Decisión: No se crearon índices para optimizar las consultas. Sin embargo, si el proyecto se escalara a millones de usuarios, los índices serían necesarios en tablas claves como tweets, follows, y users para mejorar el rendimiento de las consultas.
+
+Endpoints de la API:
+
+- Aunque se creó una función getTweetByUserId para obtener los tweets de un usuario en específico, esta no fue utilizada en la implementación final porque no formaba parte de los requerimientos explícitos del desafío.
+- Suposición: Los usuarios solo deben ver el timeline de los tweets de las personas que siguen, por lo que no se consideró necesario el endpoint getTweetByUserId en la implementación final. Esta función tendría utilidad en caso de que un usuario entrara a su perfil y quisiera ver sus propios Tweets.
+
+Escalabilidad:
+
+- Suposición: Si bien no se implementó un sistema de microservicios o una infraestructura distribuida para este desafío, la arquitectura propuesta está pensada para poder escalar mediante el uso de sistemas de caché y bases de datos distribuidas en una versión futura.
+- Decisión: No se consideraron aspectos de escalabilidad como sharding, balanceo de carga o particionamiento de bases de datos en este desafío.
+
+Infraestructura y Despliegue:
+
+- Decisión: La aplicación fue dockerizada para facilitar su despliegue y consistencia en el entorno de desarrollo. Sin embargo, no se realizó un despliegue en producción ni en un servidor externo.
+- Suposición: Aunque la aplicación no fue desplegada en un entorno real, el uso de Docker permite que pueda ser fácilmente desplegada en cualquier entorno que soporte contenedores, como un servidor o en la nube.
+- Decisión: Dockeriza la aplicación para una configuración más sencilla y portátil entre entornos.
+
+Balanceo de Carga:
+
+- Decisión: Para mejorar la eficiencia y escalabilidad de la aplicación, se considera la implementación de balanceo de carga. Esta técnica distribuiría el tráfico de solicitudes de usuarios entre varias instancias de la aplicación, lo que permitiría gestionar el aumento de la carga de manera efectiva, mejorando la disponibilidad y reduciendo el tiempo de respuesta.
+- Suposición: El balanceo de carga sería útil cuando la aplicación crezca y se necesite manejar un número elevado de usuarios simultáneos. El balanceo de carga permite que las solicitudes no se concentren en una sola instancia, lo que podría reducir la latencia y mejorar la experiencia del usuario.
+- Decisión: Si la aplicación fuera desplegada en producción con múltiples instancias, se usaría un load balancer (como NGINX, HAProxy o un servicio en la nube como AWS ELB) para distribuir las solicitudes entre diferentes nodos o servidores.
+
+
+Replicas de base de datos:
+- Suposición: Para optimizar la eficiencia de las lecturas y permitir la escalabilidad en el futuro, se implementaría una arquitectura con una base de datos principal para escrituras y réplicas de solo lectura para manejar las consultas de lectura.
+- Justificación: Dado que la aplicación requiere un alto volumen de lecturas (consultas para obtener tweets y timelines), y considerando que la mayoría de las operaciones de lectura son más frecuentes que las de escritura, la separación de las operaciones de lectura y escritura ayuda a:
+Desacoplar las cargas de trabajo: Las lecturas no compiten con las escrituras, mejorando el rendimiento general de la aplicación.
+Optimización de recursos: Las réplicas de solo lectura permiten distribuir las consultas sin afectar la base de datos principal, mejorando la eficiencia.
+Escalabilidad: La infraestructura se puede escalar horizontalmente agregando más réplicas de lectura conforme la demanda crece, sin afectar la base de datos principal.
+
+Generación de Logs de Auditoría:
+
+- Suposición: Aunque no se implementó la generación de logs de auditoría en el proyecto, lo considero una práctica fundamental para cualquier aplicación que necesite rastrear la actividad de los usuarios y las acciones del sistema.
+- Decisión: Se implementaría una solución de logs de auditoría utilizando una base de datos NoSQL, como MongoDB, para almacenar los registros de actividades importantes. Esto proporcionaría flexibilidad para almacenar logs con una estructura más libre y escalabilidad a medida que crezca la cantidad de datos.
