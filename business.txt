@@ -53,3 +53,5 @@ Assumption para eliminación de tweets:
 Assumption para "Unfollow":
 Suposición: Aunque no se implementó la lógica de "unfollow" en este desafío, se asume que en el futuro, si los usuarios deciden dejar de seguir a alguien, el timeline debe actualizarse en consecuencia.
 Decisión: La lógica de "unfollow" podría consistir en eliminar al usuario de la lista de seguidores y actualizar el cache de Redis para eliminar los tweets de los usuarios a los que ya no se siguen. La caché del timeline de un usuario podría ser invalidada o actualizada para reflejar que ya no debe mostrar tweets de esa persona.
+
+Suposición sobre Actualización de Redis al Crear un Tweet: Cuando un usuario crea un nuevo tweet, un consumidor se encargía de actualizar las cachés de los seguidores de ese usuario en Redis. Este proceso inserta el tweet en las cachés de los seguidores, para que al consultar el timeline, se obtengan los tweets desde el cache en lugar de realizar una consulta costosa a la base de datos.
