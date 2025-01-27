@@ -121,6 +121,18 @@ func CountFollows(db *sql.DB, userId int64, relationType string) (int64, error) 
 
 	return totalFollows, nil
 }
+func GetFollowByFollowerAndFollowed(db *sql.DB, followerId int64, followedId int64) (models.UserFollow, error) {
+	var follow models.UserFollow
+	err := db.QueryRow(`SELECT follower_id, followed_id, created_at FROM follows WHERE follower_id = $1 AND followed_id = $2`, followerId, followedId).
+		Scan(&follow.FollowerID, &follow.FollowedID, &follow.CreatedAt)
+
+	if err != nil {
+		// Devuelve el valor cero de models.UserFollow y el error
+		return models.UserFollow{}, fmt.Errorf("Not found")
+	}
+
+	return follow, nil
+}
 
 //Funciones para interactuar con redis respecto a los Follows
 

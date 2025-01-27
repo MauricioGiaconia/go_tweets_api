@@ -33,6 +33,12 @@ func (ufs *FollowService) FollowUser(follow *models.UserFollow) (bool, error) {
 		return false, fmt.Errorf("Nonexistent follower ID user")
 	}
 
+	_, err = repositories.GetFollowByFollowerAndFollowed(ufs.DB, follow.FollowerID, follow.FollowedID)
+
+	if err == nil {
+		return false, fmt.Errorf("Follow already exists")
+	}
+
 	userFollow, err := repositories.FollowUser(ufs.DB, follow)
 
 	if err != nil {

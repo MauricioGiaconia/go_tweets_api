@@ -50,8 +50,14 @@ func (ufc *UserFollowController) FollowUserHandler(c *gin.Context) {
 
 	if err != nil {
 		if err.Error() == "Nonexistent followed ID user" || err.Error() == "Nonexistent follower ID user" {
-			badResponse := utils.ResponseToApi(http.StatusNotFound, err.Error(), false, 0, 0, 0)
-			c.JSON(http.StatusNotFound, badResponse)
+			notFoundResponse := utils.ResponseToApi(http.StatusNotFound, err.Error(), false, 0, 0, 0)
+			c.JSON(http.StatusNotFound, notFoundResponse)
+			return
+		}
+
+		if err.Error() == "Follow already exists" {
+			badResponse := utils.ResponseToApi(http.StatusBadRequest, err.Error(), false, 0, 0, 0)
+			c.JSON(http.StatusBadRequest, badResponse)
 			return
 		}
 
