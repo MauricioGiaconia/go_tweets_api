@@ -63,8 +63,8 @@ func (uc *UserController) GetUserByIdHandler(c *gin.Context) {
 
 	if err != nil {
 		if err.Error() == "Error fetching user: user not found" {
-			notFoundResponse := utils.ResponseToApi(404, "Not found", false, 0, 0, 0)
-			c.JSON(404, notFoundResponse)
+			notFoundResponse := utils.ResponseToApi(http.StatusNotFound, "Not found", false, 0, 0, 0)
+			c.JSON(http.StatusNotFound, notFoundResponse)
 			return
 		}
 

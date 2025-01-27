@@ -41,7 +41,13 @@ func (tc *TweetController) CreateTweetHandler(c *gin.Context) {
 
 	if err != nil {
 
-		if err.Error() == "Nonexistent user" || err.Error() == "The content of the tweet must not exceed 280 characters" {
+		if err.Error() == "Nonexistent user" {
+			notFoundResponse := utils.ResponseToApi(http.StatusNotFound, err.Error(), false, 0, 0, 0)
+			c.JSON(http.StatusNotFound, notFoundResponse)
+			return
+		}
+
+		if err.Error() == "The content of the tweet must not exceed 280 characters" {
 			badResponse := utils.ResponseToApi(http.StatusBadRequest, err.Error(), false, 0, 0, 0)
 			c.JSON(http.StatusBadRequest, badResponse)
 			return
@@ -110,8 +116,8 @@ func (tc *TweetController) GetTimelineHandler(c *gin.Context) {
 
 	if err != nil {
 		if err.Error() == "Nonexistent user" {
-			badResponse := utils.ResponseToApi(http.StatusBadRequest, err.Error(), false, 0, 0, 0)
-			c.JSON(http.StatusBadRequest, badResponse)
+			notFoundResponse := utils.ResponseToApi(http.StatusNotFound, err.Error(), false, 0, 0, 0)
+			c.JSON(http.StatusBadRequest, notFoundResponse)
 			return
 		}
 

@@ -96,11 +96,11 @@ func TestPostAndGetFollows(t *testing.T) {
 		{FollowCreationRequest{
 			FollowerId: 1,
 			FollowedId: 200,
-		}, http.StatusBadRequest, "Nonexistent followed ID user"},
+		}, http.StatusNotFound, "Nonexistent followed ID user"},
 		{FollowCreationRequest{
 			FollowerId: 100,
 			FollowedId: 2,
-		}, http.StatusBadRequest, "Nonexistent follower ID user"},
+		}, http.StatusNotFound, "Nonexistent follower ID user"},
 		{FollowCreationRequest{
 			FollowerId: 1,
 			FollowedId: 1,

@@ -81,7 +81,7 @@ func TestTweetCreation(t *testing.T) {
 	}{
 		{CreateTweetRequest{Content: "test posteado", UserID: 1}, int(http.StatusCreated), "Tweet posted"},
 		{CreateTweetRequest{Content: "Uala ha transformado la experiencia financiera de millones de usuarios al ofrecer una plataforma accesible y completa que les permite gestionar su dinero, realizar pagos, ahorrar, solicitar créditos y acceder a una amplia gama de servicios financieros con solo unos clics, facilitando su día a día.", UserID: 1}, int(http.StatusBadRequest), "The content of the tweet must not exceed 280 characters"},
-		{CreateTweetRequest{Content: "test", UserID: 9999}, int(http.StatusBadRequest), "Nonexistent user"},
+		{CreateTweetRequest{Content: "test", UserID: 9999}, int(http.StatusNotFound), "Nonexistent user"},
 	}
 	for i, tc := range requests {
 		t.Run(fmt.Sprintf("Request %d", i+1), func(t *testing.T) {
