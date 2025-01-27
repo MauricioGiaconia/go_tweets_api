@@ -12,13 +12,11 @@ Se utilizó una base de datos en memoria para pruebas.
 - Decisión: No se crearon índices para optimizar las consultas. Sin embargo, si el proyecto se escalara a millones de usuarios, los índices serían necesarios en tablas claves como tweets, follows, y users para mejorar el rendimiento de las consultas.
 
 Endpoints de la API:
-
 - Aunque se creó una función getTweetByUserId para obtener los tweets de un usuario en específico, esta no fue utilizada en la implementación final porque no formaba parte de los requerimientos explícitos del desafío.
 - Suposición: Los usuarios solo deben ver el timeline de los tweets de las personas que siguen, por lo que no se consideró necesario el endpoint getTweetByUserId en la implementación final. Esta función tendría utilidad en caso de que un usuario entrara a su perfil y quisiera ver sus propios Tweets.
 
 Escalabilidad:
-
-- Suposición: Si bien no se implementó un sistema de microservicios o una infraestructura distribuida para este desafío, la arquitectura propuesta está pensada para poder escalar mediante el uso de sistemas de caché y bases de datos distribuidas en una versión futura.
+- Suposición: Si bien no se implementó un sistema de microservicios o una infraestructura distribuida para este desafío, la arquitectura propuesta está pensada para poder escalar mediante el uso de sistemas de caché y bases de datos distribuidas en una versión futura. A su vez una arquitectura de microservicios mejoraría la escalabilidad, mantenibilidad y flexibilidad.
 - Decisión: No se consideraron aspectos de escalabilidad como sharding, balanceo de carga o particionamiento de bases de datos en este desafío.
 
 Infraestructura y Despliegue:
