@@ -43,10 +43,11 @@ func (ts *TweetService) GetUserTimeline(followerId *int64, limit *int64, offset 
 			}
 			fmt.Println("[x] The timeline consulted may be outdated, searching for information in the sql database...")
 		}
+	} else {
+		fmt.Println("Without Redis connection")
 	}
 
 	timeline, err := repositories.GetTweetsFromDB(ts.DB, followerId, limit, offset)
-
 	if err != nil {
 		return nil, fmt.Errorf("Error getting timeline: %v", err)
 	}

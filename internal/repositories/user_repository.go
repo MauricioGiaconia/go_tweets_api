@@ -30,6 +30,7 @@ func CreateUser(db *sql.DB, user models.User) (int64, error) {
 
 // GetUserById obtiene un usuario por su ID desde la base de datos.
 func GetUserById(db *sql.DB, id int64) (models.User, error) {
+
 	var user models.User
 	err := db.QueryRow(`SELECT id, name, email, created_at FROM users WHERE id = $1`, id).
 		Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt)

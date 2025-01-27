@@ -2,6 +2,7 @@ package functional
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -159,12 +160,22 @@ func setupFollowRouter(db *sql.DB, rdb *redis.Client) *gin.Engine {
 }
 
 func getMockFollowRedis() *redis.Client {
+
+	var ctx = context.Background()
+
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
 		DB:       0,
 		Protocol: 2,
 	})
+
+	_, err := client.Ping(ctx).Result()
+	if err != nil {
+		fmt.Printf("error conectando a Redis: %v\n", err)
+		return nil
+	}
+
 	return client
 }
 
