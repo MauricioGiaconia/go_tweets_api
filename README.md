@@ -24,6 +24,8 @@ DB_SSLMODE=...
 DB_PORT=...
 ```
 
+**Nota:** _Si queres utilizar postgres, tenes que levantar el proyecto sin Docker._
+
 ## Ejecución del proyecto
 
 Para ejecutar este proyecto, puedes elegir entre dos opciones. En ambas, debes ejecutar los comandos desde la terminal, ubicada en la raíz del proyecto:
