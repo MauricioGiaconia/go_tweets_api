@@ -221,6 +221,9 @@ func GetUserTimelineRoutine(requestData models.PaginationWithID, tsr TweetServic
 
 func (ts *TweetService) GetUserTimelineDataWithRoutine(followerId *int64, limit *int64, offset *int64) ([]models.Tweet, int64, error) {
 
+	var timeline []models.Tweet
+	var totalTweets int64
+
 	wg := &sync.WaitGroup{}
 	errorCn := make(chan string, 1)
 	timelineCn := make(chan []models.Tweet, 1)
@@ -233,23 +236,37 @@ func (ts *TweetService) GetUserTimelineDataWithRoutine(followerId *int64, limit 
 
 	wg.Wait()
 
+	// Procesar los resultados de los canales
 	for {
 		select {
 		case errorMsg, ok := <-errorCn:
-
 			if ok {
+				// Si hay un error en errorCn, retornamos
 				return nil, 0, fmt.Errorf("Error getting timeline: %v", errorMsg)
 			}
 
 		case timelineResponse, ok := <-timelineCn:
-
 			if ok {
-				totalTweets := <-countCn
-				return timelineResponse, totalTweets, nil
+				// Si se recibe la timeline, se espera el count y se retorna
+				totalTweets = <-countCn
+				timeline = timelineResponse
+				return timeline, totalTweets, nil
 			}
+
+		case countResponse, ok := <-countCn:
+			if ok && timeline == nil {
+				// Si se recibe el count de tweets pero no hay timeline aún, lo guardamos
+				totalTweets = countResponse
+			}
+
 		default:
+			// Si ninguno de los canales está listo, retornamos error
 			return []models.Tweet{}, 0, fmt.Errorf("Cannot get timeline")
 		}
-	}
 
+		// Si hemos recibido tanto la timeline como el total de tweets, salimos
+		if timeline != nil && totalTweets > 0 {
+			return timeline, totalTweets, nil
+		}
+	}
 }
