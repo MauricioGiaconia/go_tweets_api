@@ -18,7 +18,7 @@ type TweetService struct {
 
 type TweetServiceRoutine struct {
 	TS TweetService
-	WS *sync.WaitGroup
+	WG *sync.WaitGroup
 }
 
 func NewTweetService(db *sql.DB, rdb *redis.Client) *TweetService {
@@ -133,8 +133,8 @@ func (ts *TweetService) GetTweetsByUserId(userId *int64) ([]models.Tweet, error)
 
 // Funciones con su version para utilizar con goroutines:
 
-func CountTimelineRoutine(followerId *int64, db *sql.DB, ws *sync.WaitGroup, cn chan int64) {
-	defer ws.Done()
+func CountTimelineRoutine(followerId *int64, db *sql.DB, wg *sync.WaitGroup, cn chan int64) {
+	defer wg.Done()
 	defer close(cn)
 
 	total, err := repositories.CountTweetsTimeline(db, followerId)
@@ -151,7 +151,7 @@ func CountTimelineRoutine(followerId *int64, db *sql.DB, ws *sync.WaitGroup, cn 
 func GetUserTimelineRoutine(requestData models.PaginationWithID, tsr TweetServiceRoutine, responseCn chan []models.Tweet, errorCn chan string) {
 	defer close(responseCn)
 	defer close(errorCn)
-	defer tsr.WS.Done()
+	defer tsr.WG.Done()
 
 	_, err := repositories.GetUserById(tsr.TS.DB, requestData.ID)
 
@@ -221,17 +221,17 @@ func GetUserTimelineRoutine(requestData models.PaginationWithID, tsr TweetServic
 
 func (ts *TweetService) GetUserTimelineDataWithRoutine(followerId *int64, limit *int64, offset *int64) ([]models.Tweet, int64, error) {
 
-	ws := &sync.WaitGroup{}
+	wg := &sync.WaitGroup{}
 	errorCn := make(chan string, 1)
 	timelineCn := make(chan []models.Tweet, 1)
 	countCn := make(chan int64, 1)
 
-	ws.Add(2)
+	wg.Add(2)
 
-	go GetUserTimelineRoutine(models.PaginationWithID{ID: *followerId, Limit: *limit, Offset: *offset}, TweetServiceRoutine{TS: *ts, WS: ws}, timelineCn, errorCn)
-	go CountTimelineRoutine(followerId, ts.DB, ws, countCn)
+	go GetUserTimelineRoutine(models.PaginationWithID{ID: *followerId, Limit: *limit, Offset: *offset}, TweetServiceRoutine{TS: *ts, WG: wg}, timelineCn, errorCn)
+	go CountTimelineRoutine(followerId, ts.DB, wg, countCn)
 
-	ws.Wait()
+	wg.Wait()
 
 	for {
 		select {
