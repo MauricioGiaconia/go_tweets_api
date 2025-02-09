@@ -10,7 +10,7 @@
    - Debes tener un archivo `.env` en la carpeta *benchmark* del proyecto con las siguientes variables de entorno configuradas (reemplazar los valores con lo que corresponda en tu caso):
 
 3. **Relación de seguidores**:
-  - Para realizar correctamente el benchmark, es necesario que los usuarios en la base de datos tengan una relación de seguidores configurada.
+  -Para realizar correctamente el benchmark, es necesario que los usuarios en la base de datos tengan una relación de seguidores configurada.
     **El usuario con ID 3 debe estar siguiendo al usuario con ID 1.**  
     Esto es importante para realizar las pruebas de consulta de timelines de un usuario específico.
 

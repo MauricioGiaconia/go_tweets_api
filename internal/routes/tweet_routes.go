@@ -14,7 +14,8 @@ func SetupTweetRoutes(router *gin.Engine, db *sql.DB, rdb *redis.Client) {
 
 	tweetGroup := router.Group("/tweets")
 	{
-		tweetGroup.POST("/create", tweetController.CreateTweetHandler)               // POST /tweets/post crea un nuevo tweet
-		tweetGroup.GET("/:follower_id/timeline", tweetController.GetTimelineHandler) // GET /tweets/:follower_id/timeline obtengo el timeline de los usuarios seguidos
+		tweetGroup.POST("/create", tweetController.CreateTweetHandler)                                    // POST /tweets/post crea un nuevo tweet
+		tweetGroup.GET("/:follower_id/timeline", tweetController.GetTimelineHandler)                      // GET /tweets/:follower_id/timeline obtengo el timeline de los usuarios seguidos
+		tweetGroup.GET("/:follower_id/routine_timeline", tweetController.GetTimelineWithGoRoutineHandler) // GET /tweets/:follower_id/routine_timeline obtengo el timeline de los usuarios seguidos usango go routines
 	}
 }
