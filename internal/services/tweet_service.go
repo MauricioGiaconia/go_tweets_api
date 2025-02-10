@@ -145,7 +145,6 @@ func CountTimelineRoutine(followerId *int64, db *sql.DB, wg *sync.WaitGroup, cn 
 	}
 
 	cn <- total
-	return
 }
 
 func GetUserTimelineRoutine(requestData models.PaginationWithID, tsr TweetServiceRoutine, responseCn chan []models.Tweet, errorCn chan string) {
@@ -216,7 +215,6 @@ func GetUserTimelineRoutine(requestData models.PaginationWithID, tsr TweetServic
 	}
 
 	responseCn <- timeline
-	return
 }
 
 func (ts *TweetService) GetUserTimelineDataWithRoutine(followerId *int64, limit *int64, offset *int64) ([]models.Tweet, int64, error) {
