@@ -1,8 +1,8 @@
-# UALA_BACKEND_CHALLENGE - Prueba técnica para Uala
+# GO_TWEEETS_API
 
 ## Descripción
 
-Este proyecto es un challenge backend para Uala. La prueba consiste en crear una plataforma similar a *Twitter* donde se permitirá:
+Este proyecto consiste en crear una plataforma similar a *Twitter* donde se permitirá:
 
 - Crear usuarios.
 - Que los usuarios puedan seguirse entre sí.
@@ -41,7 +41,7 @@ Pasos para ejecutar con Docker:
 1- Construir la imagen de Docker:
 
 ```bash
-docker build -t uala_backend_challenge .   
+docker build -t go_tweets_api .   
 ```
 
 2- Ejecuta un contenedor:
@@ -50,7 +50,7 @@ Para levantar el contenedor con Docker, usa el siguiente comando. Si deseas carg
 **Nota:** La opción -d ejecuta el contenedor en segundo plano. Si deseas ver la consola de la API, quita la opción -d.
 
 ```bash
-docker run --name uala-challenge -d -p 8080:8080 uala_backend_challenge
+docker run --name tweets-api -d -p 8080:8080 go_tweets_api
 ```
 
 3- Probar la API:
@@ -73,13 +73,13 @@ Si todo está bien, deberías recibir la siguiente respuesta:
 Para detener el contenedor, ejecuta el siguiente comando:
 
 ```bash
-docker stop uala-challenge
+docker stop tweets-api
 ```
 
 5- Una vez detenido el contenedor, puedes eliminarlo con:
 
 ```bash
-docker rm uala-challenge
+docker rm tweets-api
 ```
 
 ---
